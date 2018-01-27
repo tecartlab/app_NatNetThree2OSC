@@ -188,7 +188,7 @@ namespace NatNetThree2OSC
 
             /*  Processing and ouputting frame data every 200th frame.
                 This conditional statement is included in order to simplify the program output */
-            if(data.iFrame % 200 == 0)
+            if(data.iFrame % 1 == 0)
             {
                 var message = new SharpOSC.OscMessage("/frame/start", data.iFrame);
                 OSCsender.Send(message);
@@ -223,7 +223,7 @@ namespace NatNetThree2OSC
 
                         if (rbData.Tracked == true)
                         {
-                            var message = new SharpOSC.OscMessage("/rigitbody/transform", rb.ID, rbData.x, rbData.y, rbData.z, rbData.qx, rbData.qy, rbData.qz, rbData.qw);
+                            var message = new SharpOSC.OscMessage("/rigidbody/transform", rb.ID, rbData.x, rbData.y, rbData.z, rbData.qx, rbData.qy, rbData.qz, rbData.qw);
                             OSCsender.Send(message);
 
                             /*
@@ -244,7 +244,9 @@ namespace NatNetThree2OSC
                         }
                         else
                         {
-                            Console.WriteLine("\t{0} is not tracked in current frame", rb.Name);
+                            // HERE AN INFO MESSAGE can be sent that this rigidbody is occluded...(set red...)
+
+                            //Console.WriteLine("\t{0} is not tracked in frame {1}", rb.Name, data.iFrame);
                         }
                     }
                 }
