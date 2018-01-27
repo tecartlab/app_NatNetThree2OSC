@@ -1,0 +1,6 @@
+C:\Users\maybites\Desktop\NatNetSDK\Samples\bin\x86\SampleClientML.exe.config
+C:\Users\maybites\Desktop\NatNetSDK\Samples\bin\x86\SampleClientML.exe
+C:\Users\maybites\Desktop\NatNetSDK\Samples\bin\x86\SampleClientML.pdb
+C:\Users\maybites\Desktop\NatNetSDK\Samples\SampleClientML\obj\x86\Release\SampleClientML.csprojResolveAssemblyReference.cache
+C:\Users\maybites\Desktop\NatNetSDK\Samples\SampleClientML\obj\x86\Release\SampleClientML.exe
+C:\Users\maybites\Desktop\NatNetSDK\Samples\SampleClientML\obj\x86\Release\SampleClientML.pdb

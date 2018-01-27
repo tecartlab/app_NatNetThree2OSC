@@ -1,0 +1,14 @@
+﻿  GLPrint.cpp
+  MarkerPositionCollection.cpp
+  NATUtils.cpp
+NATUtils.cpp(148): warning C4996: 'gethostbyname': Use getaddrinfo() or GetAddrInfoW() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  C:\Program Files (x86)\Windows Kits\8.1\Include\um\winsock2.h(2238): note: see declaration of 'gethostbyname'
+NATUtils.cpp(140): warning C4101: 'szMyName': unreferenced local variable
+  OpenGlDrawingFunctions.cpp
+  RigidBodyCollection.cpp
+  SampleClient3D.cpp
+  Generating code
+  All 381 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  SampleClient3D.vcxproj -> C:\Users\maybites\Desktop\NatNetSDK\Samples\SampleClient3D\..\bin\x86\SampleClient3D.exe
+  SampleClient3D.vcxproj -> ..\bin\x86\SampleClient3D.pdb (Full PDB)
