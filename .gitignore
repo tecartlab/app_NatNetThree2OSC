@@ -3,3 +3,8 @@
 source/NatNetThree2OSC.VC.VC.opendb
 *.tlog
 *.log
+source/bin/x86/NatNetThree2OSC.exe.config
+source/NatNetThree2OSC/obj/x86/Debug/NatNetThree2OSC.pdb
+source/NatNetThree2OSC/obj/x86/Debug/NatNetThree2OSC.exe
+source/bin/x86/NatNetThree2OSC.pdb
+source/bin/x86/NatNetThree2OSC.exe

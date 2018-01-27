@@ -44,7 +44,7 @@ using NatNetML;
  */
 
 
-namespace SampleClientML
+namespace NatNetThree2OSC
 {
     public class NatNetThree2OSC
     {
@@ -52,6 +52,8 @@ namespace SampleClientML
         private static NatNetML.NatNetClientML mNatNet;    // The client instance
         private static string mStrLocalIP = "127.0.0.1";   // Local IP address (string)
         private static string mStrServerIP = "127.0.0.1";  // Server IP address (string)
+        private static string mStrLocalOSCIP = "127.0.0.1";   // Local OSC IP address (string)
+        private static int mStrLocalOSCPort = 54321;   // Local OSC Port (string)
         private static NatNetML.ConnectionType mConnectionType = ConnectionType.Multicast; // Multicast or Unicast mode
 
 
@@ -67,11 +69,34 @@ namespace SampleClientML
         /*  boolean value for detecting change in asset */
         private static bool mAssetChanged = false;
 
+        // create an OSC Udp sender
+        private static SharpOSC.UDPSender OSCsender;
 
-        static void Main()
+        static void Main(string[] args)
         {
- 
-            Console.WriteLine("SampleClientML managed client application starting...\n");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 1.0  ----");
+            Console.WriteLine("\n----   20180127 by maybites  ----");
+
+            if (args.Length == 5)
+            {
+                mStrLocalIP = args[0];
+                mStrServerIP = args[1];
+                mStrLocalOSCIP = args[2];
+                int j;
+                if (Int32.TryParse(args[3], out j))
+                    mStrLocalOSCPort = j;
+                else
+                    Console.WriteLine("Port value is no number ({0:N3})", args[3]);
+                Console.WriteLine("\nNatNetThree2OSC (<NatNetLocal IP ({0:N3})>, <NatNetServer IP ({1:N3})>, <OSCIP ({2:N3})>, <OSCPort ({3:N3})>, <verbose [{4:N3}]>)\n", args[0], args[1], args[2], args[3], args[4]);
+            } else
+            {
+                Console.WriteLine("\nUsage: NatNetThree2OSC  <NatNetLocal IP (127.0.0.1)> <NatNetServer IP (127.0.0.1)> <OSCIP (127.0.0.1)> <OSCPort (54321)> <verbose [0/1]>\n");
+            }
+
+            // intantiate an OSC udp sender
+            OSCsender = new SharpOSC.UDPSender(mStrLocalOSCIP, mStrLocalOSCPort);
+
+            Console.WriteLine("NatNetThree2OSC managed client application starting...\n");
             /*  [NatNet] Initialize client object and connect to the server  */
             connectToServer();                          // Initialize a NatNetClient object and connect to a server.
 
@@ -165,16 +190,20 @@ namespace SampleClientML
                 This conditional statement is included in order to simplify the program output */
             if(data.iFrame % 200 == 0)
             {
+                var message = new SharpOSC.OscMessage("/frame/start", data.iFrame);
+                OSCsender.Send(message);
+
+                /*
                 if (data.bRecording == false)
                     Console.WriteLine("Frame #{0} Received:", data.iFrame);
                 else if (data.bRecording == true)
                     Console.WriteLine("[Recording] Frame #{0} Received:", data.iFrame);
+                */
 
-                var message = new SharpOSC.OscMessage("/natnet/3/newframe", data.iFrame);
-                var sender = new SharpOSC.UDPSender("127.0.0.1", 55555);
-                sender.Send(message);
+                 processFrameData(data);
 
-                processFrameData(data);
+                message = new SharpOSC.OscMessage("/frame/end", data.iFrame);
+                OSCsender.Send(message);
             }
         }
 
@@ -194,6 +223,10 @@ namespace SampleClientML
 
                         if (rbData.Tracked == true)
                         {
+                            var message = new SharpOSC.OscMessage("/rigitbody/transform", rb.ID, rbData.x, rbData.y, rbData.z, rbData.qx, rbData.qy, rbData.qz, rbData.qw);
+                            OSCsender.Send(message);
+
+                            /*
                             Console.WriteLine("\tRigidBody ({0}):", rb.Name);
                             Console.WriteLine("\t\tpos ({0:N3}, {1:N3}, {2:N3})", rbData.x, rbData.y, rbData.z);
 
@@ -207,6 +240,7 @@ namespace SampleClientML
                             double zrot = RadiansToDegrees(eulers[2]);
 
                             Console.WriteLine("\t\tori ({0:N3}, {1:N3}, {2:N3})", xrot, yrot, zrot);
+                            */
                         }
                         else
                         {
@@ -228,15 +262,17 @@ namespace SampleClientML
                         NatNetML.Skeleton skl = mSkeletons[i];              // Saved skeleton descriptions
                         NatNetML.SkeletonData sklData = data.Skeletons[j];  // Received skeleton frame data
 
+                        /*
+
                         Console.WriteLine("\tSkeleton ({0}):", skl.Name);
                         Console.WriteLine("\t\tSegment count: {0}", sklData.nRigidBodies);
 
-                        /*  Now, for each of the skeleton segments  */
+                        //  Now, for each of the skeleton segments 
                         for (int k = 0; k < sklData.nRigidBodies; k++)
                         {
                             NatNetML.RigidBodyData boneData = sklData.RigidBodies[k];
 
-                            /*  Decoding skeleton bone ID   */
+                            //  Decoding skeleton bone ID   
                             int skeletonID = HighWord(boneData.ID);
                             int rigidBodyID = LowWord(boneData.ID);
                             int uniqueID = skeletonID * 1000 + rigidBodyID;
@@ -248,6 +284,8 @@ namespace SampleClientML
                             if (k == 0)
                                 Console.WriteLine("\t\t{0:N3}: pos({1:N3}, {2:N3}, {3:N3})", bone.Name, boneData.x, boneData.y, boneData.z);
                         }
+
+                        */
                     }
                 }
             }
@@ -274,7 +312,7 @@ namespace SampleClientML
                     }
                 }
             }
-            Console.WriteLine("\n");
+            //Console.WriteLine("\n");
         }
 
         static void connectToServer()

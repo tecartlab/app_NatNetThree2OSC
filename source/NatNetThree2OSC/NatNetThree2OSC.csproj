@@ -11,8 +11,8 @@
     <ProjectGuid>{EB3A0909-5CE7-46A9-86BB-B180ADC03980}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SampleClientML</RootNamespace>
-    <AssemblyName>SampleClientML</AssemblyName>
+    <RootNamespace>NatNetThree2OSC</RootNamespace>
+    <AssemblyName>NatNetThree2OSC</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
