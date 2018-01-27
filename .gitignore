@@ -1,2 +1,5 @@
 *.db
 *.suo
+source/NatNetThree2OSC.VC.VC.opendb
+*.tlog
+*.log
