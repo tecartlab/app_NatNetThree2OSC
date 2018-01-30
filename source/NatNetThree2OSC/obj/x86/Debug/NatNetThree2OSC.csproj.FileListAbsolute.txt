@@ -4,3 +4,4 @@ C:\Users\maybites\Arbeiten\01_projekte\150816_SPARCK\01_dev\app_NatNetThree2OSC\
 C:\Users\maybites\Arbeiten\01_projekte\150816_SPARCK\01_dev\app_NatNetThree2OSC\source\bin\x86\NatNetThree2OSC.pdb
 C:\Users\maybites\Arbeiten\01_projekte\150816_SPARCK\01_dev\app_NatNetThree2OSC\source\NatNetThree2OSC\obj\x86\Debug\NatNetThree2OSC.exe
 C:\Users\maybites\Arbeiten\01_projekte\150816_SPARCK\01_dev\app_NatNetThree2OSC\source\NatNetThree2OSC\obj\x86\Debug\NatNetThree2OSC.pdb
+C:\Users\maybites\Arbeiten\01_projekte\150816_SPARCK\01_dev\app_NatNetThree2Osc\source\NatNetThree2OSC\obj\x86\Debug\NatNetThree2OSC.csproj.CoreCompileInputs.cache

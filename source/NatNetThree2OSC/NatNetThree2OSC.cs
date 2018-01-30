@@ -52,8 +52,9 @@ namespace NatNetThree2OSC
         private static NatNetML.NatNetClientML mNatNet;    // The client instance
         private static string mStrLocalIP = "127.0.0.1";   // Local IP address (string)
         private static string mStrServerIP = "127.0.0.1";  // Server IP address (string)
-        private static string mStrLocalOSCIP = "127.0.0.1";   // Local OSC IP address (string)
-        private static int mStrLocalOSCPort = 54321;   // Local OSC Port (string)
+        private static string mStrOscSendIP = "127.0.0.1";   // Local OSC IP address (string)
+        private static int mStrOscSendPort = 54321;   // Local OSC Port (string)
+        private static int mStrOscListeningPort = 55555;   // Local OSC Port (string)
         private static NatNetML.ConnectionType mConnectionType = ConnectionType.Multicast; // Multicast or Unicast mode
 
 
@@ -74,27 +75,33 @@ namespace NatNetThree2OSC
 
         static void Main(string[] args)
         {
-            Console.WriteLine("\n---- NatNetThree2OSC v. 1.0  ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 2.0  ----");
             Console.WriteLine("\n----   20180127 by maybites  ----");
 
             if (args.Length == 5)
             {
                 mStrLocalIP = args[0];
                 mStrServerIP = args[1];
-                mStrLocalOSCIP = args[2];
+                mStrOscSendIP = args[2];
                 int j;
                 if (Int32.TryParse(args[3], out j))
-                    mStrLocalOSCPort = j;
+                    mStrOscSendPort = j;
                 else
-                    Console.WriteLine("Port value is no number ({0:N3})", args[3]);
-                Console.WriteLine("\nNatNetThree2OSC (<NatNetLocal IP ({0:N3})>, <NatNetServer IP ({1:N3})>, <OSCIP ({2:N3})>, <OSCPort ({3:N3})>, <verbose [{4:N3}]>)\n", args[0], args[1], args[2], args[3], args[4]);
+                    Console.WriteLine("OscSendPort value is no number ({0:N3})", args[3]);
+
+                if (Int32.TryParse(args[4], out j))
+                    mStrOscListeningPort = j;
+                else
+                    Console.WriteLine("OscListeningPort value is no number ({0:N3})", args[4]);
+
+                Console.WriteLine("\nNatNetThree2OSC (<NatNetLocal IP ({0:N3})>, <NatNetServer IP ({1:N3})>, <OscSendIP ({2:N3})>, <OscSendPort ({3:N3})>, <OscListeningPort ({4:N3})>, <verbose [{5:N3}]>)\n", args[0], args[1], args[2], args[3], args[4], args[5]);
             } else
             {
-                Console.WriteLine("\nUsage: NatNetThree2OSC  <NatNetLocal IP (127.0.0.1)> <NatNetServer IP (127.0.0.1)> <OSCIP (127.0.0.1)> <OSCPort (54321)> <verbose [0/1]>\n");
+                Console.WriteLine("\nUsage: NatNetThree2OSC  <NatNetLocal IP (127.0.0.1)> <NatNetServer IP (127.0.0.1)> <OscSenIP (127.0.0.1)> <OscSendPort (54321)> <OscListeningPort (55555)> <verbose [0/1]>\n");
             }
 
             // intantiate an OSC udp sender
-            OSCsender = new SharpOSC.UDPSender(mStrLocalOSCIP, mStrLocalOSCPort);
+            OSCsender = new SharpOSC.UDPSender(mStrOscSendIP, mStrOscSendPort);
 
             Console.WriteLine("NatNetThree2OSC managed client application starting...\n");
             /*  [NatNet] Initialize client object and connect to the server  */
@@ -121,6 +128,21 @@ namespace NatNetThree2OSC
                 Console.WriteLine("======================== STREAMING IN (PRESS ESC TO EXIT) =====================\n");
             }
 
+            // The cabllback function for receiveing OSC messages
+            SharpOSC.HandleOscPacket callback = delegate (SharpOSC.OscPacket packet)
+            {
+                var messageReceived = (SharpOSC.OscMessage)packet;
+                if (messageReceived != null && messageReceived.Address.Equals(value: "/command"))
+                {
+                    if(messageReceived.Arguments.Count > 0 && messageReceived.Arguments.IndexOf("refetch") != -1)
+                    {
+                        Console.WriteLine("Received Refetching Command.");
+                        mAssetChanged = true;
+                    }
+                }
+            };
+
+            var listener = new SharpOSC.UDPListener(mStrOscListeningPort, callback);
 
             while (!(Console.KeyAvailable && Console.ReadKey().Key == ConsoleKey.Escape))
             {
@@ -155,11 +177,10 @@ namespace NatNetThree2OSC
             mHtSkelRBs.Clear();
             mForcePlates.Clear();
             mNatNet.Disconnect();
+            listener.Close();
         }
 
-
-
-        /// <summary>
+         /// <summary>
         /// [NatNet] parseFrameData will be called when a frame of Mocap
         /// data has is received from the server application.
         ///
@@ -185,11 +206,11 @@ namespace NatNetThree2OSC
             {
                 mAssetChanged = true;
             }
-
-            /*  Processing and ouputting frame data every 200th frame.
-                This conditional statement is included in order to simplify the program output */
-            if(data.iFrame % 1 == 0)
+            else if(data.iFrame % 1 == 0)
             {
+                /*  Processing and ouputting frame data every 200th frame.
+                    This conditional statement is included in order to simplify the program output */
+
                 var message = new SharpOSC.OscMessage("/frame/start", data.iFrame);
                 OSCsender.Send(message);
 
@@ -223,7 +244,11 @@ namespace NatNetThree2OSC
 
                         if (rbData.Tracked == true)
                         {
-                            var message = new SharpOSC.OscMessage("/rigidbody/transform", rb.ID, rbData.x, rbData.y, rbData.z, rbData.qx, rbData.qy, rbData.qz, rbData.qw);
+                            var message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "tracked", 1);
+                            OSCsender.Send(message);
+                            message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "position", rbData.x, rbData.y, rbData.z);
+                            OSCsender.Send(message);
+                            message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "quat", rbData.qx, rbData.qy, rbData.qz, rbData.qw);
                             OSCsender.Send(message);
 
                             /*
@@ -244,6 +269,8 @@ namespace NatNetThree2OSC
                         }
                         else
                         {
+                            var message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "tracked", 0);
+                            OSCsender.Send(message);
                             // HERE AN INFO MESSAGE can be sent that this rigidbody is occluded...(set red...)
 
                             //Console.WriteLine("\t{0} is not tracked in frame {1}", rb.Name, data.iFrame);
@@ -264,14 +291,14 @@ namespace NatNetThree2OSC
                         NatNetML.Skeleton skl = mSkeletons[i];              // Saved skeleton descriptions
                         NatNetML.SkeletonData sklData = data.Skeletons[j];  // Received skeleton frame data
 
-                        /*
 
-                        Console.WriteLine("\tSkeleton ({0}):", skl.Name);
-                        Console.WriteLine("\t\tSegment count: {0}", sklData.nRigidBodies);
+                        //Console.WriteLine("\tSkeleton ({0}):", skl.Name);
+                        //Console.WriteLine("\t\tSegment count: {0}", sklData.nRigidBodies);
 
                         //  Now, for each of the skeleton segments 
                         for (int k = 0; k < sklData.nRigidBodies; k++)
                         {
+
                             NatNetML.RigidBodyData boneData = sklData.RigidBodies[k];
 
                             //  Decoding skeleton bone ID   
@@ -282,12 +309,12 @@ namespace NatNetThree2OSC
 
                             NatNetML.RigidBody bone = (RigidBody)mHtSkelRBs[key];   //Fetching saved skeleton bone descriptions
 
-                            //Outputting only the hip segment data for the purpose of this sample.
-                            if (k == 0)
-                                Console.WriteLine("\t\t{0:N3}: pos({1:N3}, {2:N3}, {3:N3})", bone.Name, boneData.x, boneData.y, boneData.z);
-                        }
+                            var message = new SharpOSC.OscMessage("/skeleton/bone", skl.ID, bone.ID, "position", boneData.x, boneData.y, boneData.z);
+                            OSCsender.Send(message);
+                            message = new SharpOSC.OscMessage("/skeleton/bone", skl.ID, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qz);
+                            OSCsender.Send(message);
 
-                        */
+                        }
                     }
                 }
             }
@@ -413,12 +440,17 @@ namespace NatNetThree2OSC
                         NatNetML.Skeleton skl = (NatNetML.Skeleton)description[i];
                         Console.WriteLine("\tSkeleton ({0}), Bones:", skl.Name);
 
+                        var message = new SharpOSC.OscMessage("/skeleton/id", skl.ID, skl.Name);
+                        OSCsender.Send(message);
+
                         //Saving Skeleton Descriptions
                         mSkeletons.Add(skl);
 
                         // Saving Individual Bone Descriptions
                         for (int j = 0; j < skl.nRigidBodies; j++)
                         {
+                            message = new SharpOSC.OscMessage("/skeleton/id/bone", skl.ID, skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
+                            OSCsender.Send(message);
 
                             Console.WriteLine("\t\t{0}. {1}", j + 1, skl.RigidBodies[j].Name);
                             int uniqueID = skl.ID * 1000 + skl.RigidBodies[j].ID;
