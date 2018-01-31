@@ -309,11 +309,15 @@ namespace NatNetThree2OSC
 
                             NatNetML.RigidBody bone = (RigidBody)mHtSkelRBs[key];   //Fetching saved skeleton bone descriptions
 
-                            var message = new SharpOSC.OscMessage("/skeleton/bone", skl.ID, bone.ID, "position", boneData.x, boneData.y, boneData.z);
-                            OSCsender.Send(message);
-                            message = new SharpOSC.OscMessage("/skeleton/bone", skl.ID, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qz);
-                            OSCsender.Send(message);
-
+                            if(bone != null) // during a refetch the bone descriptions might be removed for a moment
+                            {
+                                var message = new SharpOSC.OscMessage("/skeleton/bone", skl.ID, bone.ID, "position", boneData.x, boneData.y, boneData.z);
+                                OSCsender.Send(message);
+                                message = new SharpOSC.OscMessage("/skeleton/bone", skl.ID, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
+                                OSCsender.Send(message);
+                                message = new SharpOSC.OscMessage("/skeleton/joint", skl.ID, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
+                                OSCsender.Send(message);
+                            }
                         }
                     }
                 }
