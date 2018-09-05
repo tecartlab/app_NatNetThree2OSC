@@ -11,7 +11,7 @@ NatNetThree2OSC is a small app designed to convert the Optitrack NatNet 3.0 prot
 Download
 --------
 
-
+https://github.com/tecartlab/app_NetNatThree2OSC/releases
 
 License
 -------
@@ -44,12 +44,11 @@ the following commands are implemented:
 
 will return all rigidbodies and skeletons currently streaming
 
-/markerset/id <markersetName>
-/rigidbody/id <rigidbodyName> <rigidbodyID>
-/skeleton/id <skleletonName> <SkeletonID>
-/skeleton/id/bone <skleletonName> <boneID> <boneName>
-/forceplate/id <serial>
-/forceplate/id/channel <serial> <channelID> <channelName>
++ /rigidbody/id \<rigidbodyName> \<rigidbodyID>
++ /skeleton/id \<skleletonName> \<SkeletonID>
++ /skeleton/id/bone \<skleletonName> \<boneID> \<boneName>
++ /forceplate/id \<serial>
++ /forceplate/id/channel \<serial> \<channelID> \<channelName>
 
 Building
 ---------
