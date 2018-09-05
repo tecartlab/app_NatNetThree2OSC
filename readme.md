@@ -28,7 +28,7 @@ Usage: NatNetThree2OSC  <NatNetLocal IP (127.0.0.1)> <NatNetServer IP (127.0.0.1
 upon stream the following messages are sent:
 
 /frame/start <frameNumber>
-/rigidbody <rigidbodyID> tracked <0/1>
+/rigidbody \<rigidbodyID> tracked \<0/1>
 /rigidbody <rigidbodyID> position <x> <y> <z>
 /rigidbody <rigidbodyID> quat <x> <y> <z> <w>
 /skeleton/bone <skleletonName> <boneID> position <x> <y> <z>
