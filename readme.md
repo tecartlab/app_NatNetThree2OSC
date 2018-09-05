@@ -13,27 +13,43 @@ Download
 
 
 
-Supported Types
----------------
-
-
-
 License
 -------
 
-NatNetThree2OSC is licensed under the MIT license. 
+NatNetThree2OSC is licensed under the MIT license.
 
 See License.txt
 
 Using The Application
 -----------------
 
+Usage: NatNetThree2OSC  <NatNetLocal IP (127.0.0.1)> <NatNetServer IP (127.0.0.1)> <OscSenIP (127.0.0.1)> <OscSendPort (54321)> <OscListeningPort (55555)> <verbose [0/1]>
 
+upon stream the following messages are sent:
 
-Example: Sending a message
---------------------------
+/frame/start <frameNumber>
+/rigidbody <rigidbodyID> tracked <0/1>
+/rigidbody <rigidbodyID> position <x> <y> <z>
+/rigidbody <rigidbodyID> quat <x> <y> <z> <w>
+/skeleton/bone <skleletonName> <boneID> position <x> <y> <z>
+/skeleton/bone <skleletonName> <boneID> quat <x> <y> <z> <w>
+/skeleton/joint <skleletonName> <boneID> quat <x> <y> <z> <w>
+/frame/end <frameNumber>
 
+sending commands to the <OscListeningPort> will pass commands to Motive:
 
+the following commands are implemented:
+
+/commands refetch
+
+will return all rigidbodies and skeletons currently streaming
+
+/markerset/id <markersetName>
+/rigidbody/id <rigidbodyName> <rigidbodyID>
+/skeleton/id <skleletonName> <SkeletonID>
+/skeleton/id/bone <skleletonName> <boneID> <boneName>
+/forceplate/id <serial>
+/forceplate/id/channel <serial> <channelID> <channelName>
 
 Building
 ---------

@@ -53,8 +53,9 @@ namespace NatNetThree2OSC
         private static string mStrLocalIP = "127.0.0.1";   // Local IP address (string)
         private static string mStrServerIP = "127.0.0.1";  // Server IP address (string)
         private static string mStrOscSendIP = "127.0.0.1";   // Local OSC IP address (string)
-        private static int mStrOscSendPort = 54321;   // Local OSC Port (string)
-        private static int mStrOscListeningPort = 55555;   // Local OSC Port (string)
+        private static int mStrOscSendPort = 54321;   // Local OSC Port (int)
+        private static int mStrOscListeningPort = 55555;   // Local OSC Port (int)
+        private static bool mVerbose = false;    // verbose data (bool)
         private static NatNetML.ConnectionType mConnectionType = ConnectionType.Multicast; // Multicast or Unicast mode
 
 
@@ -75,30 +76,42 @@ namespace NatNetThree2OSC
 
         static void Main(string[] args)
         {
-            Console.WriteLine("\n---- NatNetThree2OSC v. 2.0  ----");
-            Console.WriteLine("\n----   20180127 by maybites  ----");
-
-            if (args.Length == 5)
+            if (args.Length >= 3)
             {
                 mStrLocalIP = args[0];
                 mStrServerIP = args[1];
                 mStrOscSendIP = args[2];
-                int j;
+            } else
+            {
+                Console.WriteLine("Less than 3 arguments. Ignoring input...");
+            }
+            int j;
+            bool jj;
+            if (args.Length >= 4)
+            {
                 if (Int32.TryParse(args[3], out j))
                     mStrOscSendPort = j;
                 else
-                    Console.WriteLine("OscSendPort value is no number ({0:N3})", args[3]);
-
+                    Console.WriteLine("OscSendPort value is no number ({0:N3}). Ignoring input...", args[3]);
+            }
+            if (args.Length >= 5)
+            {
                 if (Int32.TryParse(args[4], out j))
                     mStrOscListeningPort = j;
                 else
-                    Console.WriteLine("OscListeningPort value is no number ({0:N3})", args[4]);
-
-                Console.WriteLine("\nNatNetThree2OSC (<NatNetLocal IP ({0:N3})>, <NatNetServer IP ({1:N3})>, <OscSendIP ({2:N3})>, <OscSendPort ({3:N3})>, <OscListeningPort ({4:N3})>, <verbose [{5:N3}]>)\n", args[0], args[1], args[2], args[3], args[4], args[5]);
-            } else
-            {
-                Console.WriteLine("\nUsage: NatNetThree2OSC  <NatNetLocal IP (127.0.0.1)> <NatNetServer IP (127.0.0.1)> <OscSenIP (127.0.0.1)> <OscSendPort (54321)> <OscListeningPort (55555)> <verbose [0/1]>\n");
+                    Console.WriteLine("OscListeningPort value is no number ({0:N3}). Ignoring input...", args[4]);
             }
+            if (args.Length == 6)
+            {
+                if (Boolean.TryParse(args[5], out jj))
+                    mVerbose = jj;
+                else
+                    Console.WriteLine("Verbose value is no boolean (true/false) ({0:N3}). Ignoring input...", args[5]);
+            }
+            Console.WriteLine("\n---- NatNetThree2OSC v. 2.1  ----");
+            Console.WriteLine("\n----   20180127 by maybites  ----");
+
+            Console.WriteLine("\nNatNetThree2OSC \n\t<NatNetLocal IP \t({0:N3})> \n\t<NatNetServer IP \t({1:N3})> \n\t<OscSendIP \t\t({2:N3})> \n\t<OscSendPort \t\t({3})> \n\t<OscListeningPort \t({4})> \n\t<verbose \t\t[{5}]>\n", mStrLocalIP, mStrServerIP, mStrOscSendIP, mStrOscSendPort, mStrOscListeningPort, mVerbose);
 
             // intantiate an OSC udp sender
             OSCsender = new SharpOSC.UDPSender(mStrOscSendIP, mStrOscSendPort);
@@ -311,11 +324,11 @@ namespace NatNetThree2OSC
 
                             if(bone != null) // during a refetch the bone descriptions might be removed for a moment
                             {
-                                var message = new SharpOSC.OscMessage("/skeleton/bone", skl.ID, bone.ID, "position", boneData.x, boneData.y, boneData.z);
+                                var message = new SharpOSC.OscMessage("/skeleton/bone", skl.Name, bone.ID, "position", boneData.x, boneData.y, boneData.z);
                                 OSCsender.Send(message);
-                                message = new SharpOSC.OscMessage("/skeleton/bone", skl.ID, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
+                                message = new SharpOSC.OscMessage("/skeleton/bone", skl.Name, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
                                 OSCsender.Send(message);
-                                message = new SharpOSC.OscMessage("/skeleton/joint", skl.ID, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
+                                message = new SharpOSC.OscMessage("/skeleton/joint", skl.Name, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
                                 OSCsender.Send(message);
                             }
                         }
@@ -418,7 +431,7 @@ namespace NatNetThree2OSC
             //  This sample will list only names of the data sets, but you can access 
             int numDataSet = description.Count;
             Console.WriteLine("Total {0} data sets in the capture:", numDataSet);
-
+            
             for (int i = 0; i < numDataSet; ++i)
             {
                 int dataSetType = description[i].type;
@@ -428,12 +441,18 @@ namespace NatNetThree2OSC
                     case ((int) NatNetML.DataDescriptorType.eMarkerSetData):
                         NatNetML.MarkerSet mkset = (NatNetML.MarkerSet)description[i];
                         Console.WriteLine("\tMarkerSet ({0})", mkset.Name);
+                        var message = new SharpOSC.OscMessage("/markerset/id", mkset.Name);
+                        OSCsender.Send(message);
+
                         break;
 
 
                     case ((int) NatNetML.DataDescriptorType.eRigidbodyData):
                         NatNetML.RigidBody rb = (NatNetML.RigidBody)description[i];
                         Console.WriteLine("\tRigidBody ({0})", rb.Name);
+
+                        message = new SharpOSC.OscMessage("/rigidbody/id", rb.Name, rb.ID);
+                        OSCsender.Send(message);
 
                         // Saving Rigid Body Descriptions
                         mRigidBodies.Add(rb);
@@ -444,7 +463,7 @@ namespace NatNetThree2OSC
                         NatNetML.Skeleton skl = (NatNetML.Skeleton)description[i];
                         Console.WriteLine("\tSkeleton ({0}), Bones:", skl.Name);
 
-                        var message = new SharpOSC.OscMessage("/skeleton/id", skl.ID, skl.Name);
+                        message = new SharpOSC.OscMessage("/skeleton/id", skl.Name, skl.ID);
                         OSCsender.Send(message);
 
                         //Saving Skeleton Descriptions
@@ -453,10 +472,10 @@ namespace NatNetThree2OSC
                         // Saving Individual Bone Descriptions
                         for (int j = 0; j < skl.nRigidBodies; j++)
                         {
-                            message = new SharpOSC.OscMessage("/skeleton/id/bone", skl.ID, skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
+                            message = new SharpOSC.OscMessage("/skeleton/id/bone", skl.Name, skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
                             OSCsender.Send(message);
 
-                            Console.WriteLine("\t\t{0}. {1}", j + 1, skl.RigidBodies[j].Name);
+                            Console.WriteLine("\t\t{0}. {1}", skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
                             int uniqueID = skl.ID * 1000 + skl.RigidBodies[j].ID;
                             int key = uniqueID.GetHashCode();
                             mHtSkelRBs.Add(key, skl.RigidBodies[j]); //Saving the bone segments onto the hashtable
@@ -468,11 +487,17 @@ namespace NatNetThree2OSC
                         NatNetML.ForcePlate fp = (NatNetML.ForcePlate)description[i];
                         Console.WriteLine("\tForcePlate ({0})", fp.Serial);
 
+                        message = new SharpOSC.OscMessage("/forceplate/id", fp.Serial);
+                        OSCsender.Send(message);
+
                         // Saving Force Plate Channel Names
                         mForcePlates.Add(fp);
                
                         for (int j = 0; j < fp.ChannelCount; j++)
                         {
+                            message = new SharpOSC.OscMessage("/forceplate/id/channel", fp.Serial, j + 1, fp.ChannelNames[j]);
+                            OSCsender.Send(message);
+
                             Console.WriteLine("\t\tChannel {0}: {1}", j + 1, fp.ChannelNames[j]);
                         }
                         break;

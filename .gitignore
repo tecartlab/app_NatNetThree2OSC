@@ -13,3 +13,6 @@ source/.vs/NatNetThree2OSC/v15/Solution.VC.db-shm
 source/.vs/NatNetThree2OSC/v15/Server/sqlite3/db.lock
 source/.vs/NatNetThree2OSC/v15/Server/sqlite3/storage.ide
 source/NatNetThree2OSC/obj/x86/Debug/NatNetThree2OSC.csproj.CopyComplete
+source/.vs/
+source/NatNetThree2OSC/obj/
+*.user
