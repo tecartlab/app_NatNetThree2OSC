@@ -264,6 +264,13 @@ namespace NatNetThree2OSC
                             message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "quat", rbData.qx, rbData.qy, rbData.qz, rbData.qw);
                             OSCsender.Send(message);
 
+                            message = new SharpOSC.OscMessage("/rigidbody/isadora/" + rb.ID + "/tracked", 1);
+                            OSCsender.Send(message);
+                            message = new SharpOSC.OscMessage("/rigidbody/isadora/" + rb.ID + "/position", rbData.x, rbData.y, rbData.z);
+                            OSCsender.Send(message);
+                            message = new SharpOSC.OscMessage("/rigidbody/isadora/" + rb.ID + "/quat", rbData.qx, rbData.qy, rbData.qz, rbData.qw);
+                            OSCsender.Send(message);
+
                             /*
                             Console.WriteLine("\tRigidBody ({0}):", rb.Name);
                             Console.WriteLine("\t\tpos ({0:N3}, {1:N3}, {2:N3})", rbData.x, rbData.y, rbData.z);
@@ -283,6 +290,9 @@ namespace NatNetThree2OSC
                         else
                         {
                             var message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "tracked", 0);
+                            OSCsender.Send(message);
+
+                            message = new SharpOSC.OscMessage("/rigidbody/isadora/" + rb.ID + "/tracked", 0);
                             OSCsender.Send(message);
                             // HERE AN INFO MESSAGE can be sent that this rigidbody is occluded...(set red...)
 
