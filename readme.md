@@ -23,22 +23,44 @@ See License.txt
 Using The Application
 -----------------
 
-Usage: NatNetThree2OSC  <NatNetLocal IP (127.0.0.1)> <NatNetServer IP (127.0.0.1)> <OscSenIP (127.0.0.1)> <OscSendPort (54321)> <OscListeningPort (55555)> <verbose [0/1]>
+Usage: NatNetThree2OSC  <NatNetLocal IP (127.0.0.1)> <NatNetServer IP (127.0.0.1)> <OscSenIP (127.0.0.1)> <OscSendPort (54321)> <OscListeningPort (55555)> <OscMode [max(isadora,touch)]> <verbose [0/1]>
 
-upon stream the following messages are sent:
+upon stream the following messages are sent depending on the OSC Mode
 
 + /frame/start \<frameNumber>
+
+MAX/MSP: OSC MODE = max
+
 + /rigidbody \<rigidbodyID> tracked \<0/1>
 + /rigidbody \<rigidbodyID> position \<x> \<y> \<z>
-+ /rigidbody \<rigidbodyID> quat \<x> \<y> \<z> \<w>
-
-+ /rigidbody/isadora/\<rigidbodyID>/tracked \<0/1>
-+ /rigidbody/isadora/\<rigidbodyID>/position \<x> \<y> \<z>
-+ /rigidbody/isadora/\<rigidbodyID>/quat \<x> \<y> \<z> \<w>
++ /rigidbody \<rigidbodyID> quat \<qx> \<qy> \<qz> \<qw>
 
 + /skeleton/bone \<skleletonName> \<boneID> position \<x> \<y> \<z>
-+ /skeleton/bone \<skleletonName> \<boneID> quat \<x> \<y> \<z> \<w>
-+ /skeleton/joint \<skleletonName> \<boneID> quat \<x> \<y> \<z> \<w>
++ /skeleton/bone \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
++ /skeleton/joint \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
+
+ISADORA: OSC MODE = isadora
+
++ /rigidbody/\<rigidbodyID>/tracked \<0/1>
++ /rigidbody/\<rigidbodyID>/position \<x> \<y> \<z>
++ /rigidbody/\<rigidbodyID>/quat \<qx> \<qy> \<qz> \<qw>
+
++ /skeleton/\<skleletonName>/bone/\<boneID>/position \<x> \<y> \<z>
++ /skeleton/\<skleletonName>/bone/\<boneID>/quat \<qx> \<qy> \<qz> \q<w>
++ /skeleton/\<skleletonName>/joint/\<boneID>/quat \<qx> \<qy> \<qz> \<qw>
+
+TouchDesigner: OSC MODE = touch
+
++ /rigidbody/\<rigidbodyID>/tracked \<0/1>
++ /rigidbody/\<rigidbodyID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
+
++ /skeleton/\<skleletonName>/bone/\<boneID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
++ /skeleton/\<skleletonName>/joint/\<boneID>/quat \<x> \<y> \<z> \<w>
+
+IF you want to have multiple modes, set the oscmode like "max,isadora" or "isadora,touch" and make sure no space is between the values
+
+At the end of the frame the frameend message is sent
+
 + /frame/end \<frameNumber>
 
 sending commands to the <OscListeningPort> will pass commands to Motive:

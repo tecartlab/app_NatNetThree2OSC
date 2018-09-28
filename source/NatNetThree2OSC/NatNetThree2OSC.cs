@@ -56,6 +56,10 @@ namespace NatNetThree2OSC
         private static int mStrOscSendPort = 54321;   // Local OSC Port (int)
         private static int mStrOscListeningPort = 55555;   // Local OSC Port (int)
         private static bool mVerbose = false;    // verbose data (bool)
+        private static string mOscMode = "max";    // osc mode sets the different structures of osc messages 
+        private static bool mOscModeMax = true;
+        private static bool mOscModeIsa = false;
+        private static bool mOscModeTouch = false;
         private static NatNetML.ConnectionType mConnectionType = ConnectionType.Multicast; // Multicast or Unicast mode
 
 
@@ -101,17 +105,35 @@ namespace NatNetThree2OSC
                 else
                     Console.WriteLine("OscListeningPort value is no number ({0:N3}). Ignoring input...", args[4]);
             }
-            if (args.Length == 6)
+            if (args.Length >= 6)
             {
-                if (Boolean.TryParse(args[5], out jj))
+                mOscMode = args[5];
+                if (mOscMode.ToLower().Contains("max"))
+                {
+                    mOscModeMax = true;
+                }
+                if (mOscMode.ToLower().Contains("isadora"))
+                {
+                    mOscModeIsa = true;
+                }
+                if (mOscMode.ToLower().Contains("touch"))
+                {
+                    mOscModeTouch = true;
+                }
+                else
+                    Console.WriteLine("Value is no string (max, isadora, touch) ({0:N3}). Ignoring input...", args[5]);
+            }
+            if (args.Length == 7)
+            {
+                if (Boolean.TryParse(args[6], out jj))
                     mVerbose = jj;
                 else
-                    Console.WriteLine("Verbose value is no boolean (true/false) ({0:N3}). Ignoring input...", args[5]);
+                    Console.WriteLine("Verbose value is no boolean (true/false) ({0:N3}). Ignoring input...", args[6]);
             }
-            Console.WriteLine("\n---- NatNetThree2OSC v. 2.1  ----");
-            Console.WriteLine("\n----   20180127 by maybites  ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 3.0  ----");
+            Console.WriteLine("\n----   20180928 by maybites  ----");
 
-            Console.WriteLine("\nNatNetThree2OSC \n\t<NatNetLocal IP \t({0:N3})> \n\t<NatNetServer IP \t({1:N3})> \n\t<OscSendIP \t\t({2:N3})> \n\t<OscSendPort \t\t({3})> \n\t<OscListeningPort \t({4})> \n\t<verbose \t\t[{5}]>\n", mStrLocalIP, mStrServerIP, mStrOscSendIP, mStrOscSendPort, mStrOscListeningPort, mVerbose);
+            Console.WriteLine("\nNatNetThree2OSC \n\t<NatNetLocal IP \t({0:N3})> \n\t<NatNetServer IP \t({1:N3})> \n\t<OscSendIP \t\t({2:N3})> \n\t<OscSendPort \t\t({3})> \n\t<OscListeningPort \t({4})> \n\t<oscMode \t\t[{5}]> \n\t<verbose \t\t[{6}]>\n", mStrLocalIP, mStrServerIP, mStrOscSendIP, mStrOscSendPort, mStrOscListeningPort, mOscMode, mVerbose);
 
             // intantiate an OSC udp sender
             OSCsender = new SharpOSC.UDPSender(mStrOscSendIP, mStrOscSendPort);
@@ -243,6 +265,8 @@ namespace NatNetThree2OSC
 
         static void processFrameData(NatNetML.FrameOfMocapData data)
         {
+            var message = new SharpOSC.OscMessage("/rigidbody");
+
             /*  Parsing Rigid Body Frame Data   */
             for (int i = 0; i < mRigidBodies.Count; i++)
             {
@@ -257,19 +281,31 @@ namespace NatNetThree2OSC
 
                         if (rbData.Tracked == true)
                         {
-                            var message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "tracked", 1);
-                            OSCsender.Send(message);
-                            message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "position", rbData.x, rbData.y, rbData.z);
-                            OSCsender.Send(message);
-                            message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "quat", rbData.qx, rbData.qy, rbData.qz, rbData.qw);
-                            OSCsender.Send(message);
-
-                            message = new SharpOSC.OscMessage("/rigidbody/isadora/" + rb.ID + "/tracked", 1);
-                            OSCsender.Send(message);
-                            message = new SharpOSC.OscMessage("/rigidbody/isadora/" + rb.ID + "/position", rbData.x, rbData.y, rbData.z);
-                            OSCsender.Send(message);
-                            message = new SharpOSC.OscMessage("/rigidbody/isadora/" + rb.ID + "/quat", rbData.qx, rbData.qy, rbData.qz, rbData.qw);
-                            OSCsender.Send(message);
+                            if (mOscModeMax)
+                            {
+                                message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "tracked", 1);
+                                OSCsender.Send(message);
+                                message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "position", rbData.x, rbData.y, rbData.z);
+                                OSCsender.Send(message);
+                                message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "quat", rbData.qx, rbData.qy, rbData.qz, rbData.qw);
+                                OSCsender.Send(message);
+                            }
+                            if (mOscModeIsa)
+                            {
+                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/tracked", 1);
+                                OSCsender.Send(message);
+                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/position", rbData.x, rbData.y, rbData.z);
+                                OSCsender.Send(message);
+                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/quat", rbData.qx, rbData.qy, rbData.qz, rbData.qw);
+                                OSCsender.Send(message);
+                            }
+                            if (mOscModeTouch)
+                            {
+                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/tracked", 1);
+                                OSCsender.Send(message);
+                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/transformation", rbData.x, rbData.y, rbData.z, rbData.qx, rbData.qy, rbData.qz, rbData.qw);
+                                OSCsender.Send(message);
+                            }
 
                             /*
                             Console.WriteLine("\tRigidBody ({0}):", rb.Name);
@@ -289,11 +325,16 @@ namespace NatNetThree2OSC
                         }
                         else
                         {
-                            var message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "tracked", 0);
-                            OSCsender.Send(message);
-
-                            message = new SharpOSC.OscMessage("/rigidbody/isadora/" + rb.ID + "/tracked", 0);
-                            OSCsender.Send(message);
+                            if (mOscModeMax)
+                            {
+                                message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "tracked", 0);
+                                OSCsender.Send(message);
+                            }
+                            if (mOscModeIsa || mOscModeTouch)
+                            {
+                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/tracked", 0);
+                                OSCsender.Send(message);
+                            }
                             // HERE AN INFO MESSAGE can be sent that this rigidbody is occluded...(set red...)
 
                             //Console.WriteLine("\t{0} is not tracked in frame {1}", rb.Name, data.iFrame);
@@ -334,12 +375,31 @@ namespace NatNetThree2OSC
 
                             if(bone != null) // during a refetch the bone descriptions might be removed for a moment
                             {
-                                var message = new SharpOSC.OscMessage("/skeleton/bone", skl.Name, bone.ID, "position", boneData.x, boneData.y, boneData.z);
-                                OSCsender.Send(message);
-                                message = new SharpOSC.OscMessage("/skeleton/bone", skl.Name, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
-                                OSCsender.Send(message);
-                                message = new SharpOSC.OscMessage("/skeleton/joint", skl.Name, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
-                                OSCsender.Send(message);
+                                if (mOscModeMax)
+                                {
+                                    message = new SharpOSC.OscMessage("/skeleton/bone", skl.Name, bone.ID, "position", boneData.x, boneData.y, boneData.z);
+                                    OSCsender.Send(message);
+                                    message = new SharpOSC.OscMessage("/skeleton/bone", skl.Name, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
+                                    OSCsender.Send(message);
+                                    message = new SharpOSC.OscMessage("/skeleton/joint", skl.Name, bone.ID, "quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
+                                    OSCsender.Send(message);
+                                }
+                                if (mOscModeIsa)
+                                {
+                                    message = new SharpOSC.OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/position", boneData.x, boneData.y, boneData.z);
+                                    OSCsender.Send(message);
+                                    message = new SharpOSC.OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
+                                    OSCsender.Send(message);
+                                    message = new SharpOSC.OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
+                                    OSCsender.Send(message);
+                                }
+                                if (mOscModeTouch)
+                                {
+                                    message = new SharpOSC.OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/transformation", boneData.x, boneData.y, boneData.z, boneData.qx, boneData.qy, boneData.qz, boneData.qw);
+                                    OSCsender.Send(message);
+                                    message = new SharpOSC.OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", boneData.qx, boneData.qy, boneData.qz, boneData.qw);
+                                    OSCsender.Send(message);
+                                }
                             }
                         }
                     }
