@@ -108,20 +108,11 @@ namespace NatNetThree2OSC
             if (args.Length >= 6)
             {
                 mOscMode = args[5];
-                if (mOscMode.ToLower().Contains("max"))
-                {
-                    mOscModeMax = true;
-                }
-                if (mOscMode.ToLower().Contains("isadora"))
-                {
-                    mOscModeIsa = true;
-                }
-                if (mOscMode.ToLower().Contains("touch"))
-                {
-                    mOscModeTouch = true;
-                }
-                else
-                    Console.WriteLine("Value is no string (max, isadora, touch) ({0:N3}). Ignoring input...", args[5]);
+                mOscModeMax = (mOscMode.ToLower().Contains("max")) ? true : false;
+                mOscModeIsa = (mOscMode.ToLower().Contains("isadora")) ? true : false;
+                mOscModeTouch = (mOscMode.ToLower().Contains("touch")) ? true : false;
+                if (!mOscMode.ToLower().Contains("touch") && !mOscMode.ToLower().Contains("isadora") && !mOscMode.ToLower().Contains("max"))
+                    Console.WriteLine("Value is not valid (max, isadora, touch) ({0:N3}). Ignoring input...", args[5]);
             }
             if (args.Length == 7)
             {
