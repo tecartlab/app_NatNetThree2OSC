@@ -23,7 +23,7 @@ See License.txt
 Using The Application
 -----------------
 
-Usage: NatNetThree2OSC  <NatNetLocal IP (127.0.0.1)> <NatNetServer IP (127.0.0.1)> <OscSenIP (127.0.0.1)> <OscSendPort (54321)> <OscListeningPort (55555)> <OscMode [max(isadora,touch)]> <verbose [0/1]>
+Usage: NatNetThree2OSC  <NatNetLocal IP (127.0.0.1)> <NatNetServer IP (127.0.0.1)> <OscSenIP (127.0.0.1)> <OscSendPort (54321)> <OscListeningPort (55555)> <OscMode [max(isadora,touch)]> <upAxis 0=no change, 1=yUp to zUp> <verbose [0/1]>
 
 upon stream the following messages are sent depending on the OSC Mode
 
