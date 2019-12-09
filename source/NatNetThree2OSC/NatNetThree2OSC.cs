@@ -264,7 +264,40 @@ namespace NatNetThree2OSC
 
         static void processFrameData(NatNetML.FrameOfMocapData data)
         {
-            var message = new SharpOSC.OscMessage("/rigidbody");
+
+            var message = new SharpOSC.OscMessage("/marker");
+            /*  Parsing marker Frame Data   */
+
+            for (int j = 0; j < data.nMarkers; j++)
+            {
+                NatNetML.Marker rbData = data.LabeledMarkers[j];    // Received marker descriptions
+                
+                float pxt, pyt, pzt = 0.0f;
+                if (mUpAxis == 1)
+                {
+                    pxt = rbData.x;
+                    pyt = -rbData.z;
+                    pzt = rbData.y;
+                }
+                else
+                {
+                    pxt = rbData.x;
+                    pyt = rbData.y;
+                    pzt = rbData.z;
+                }
+
+                if (mOscModeMax)
+                {
+                    message = new SharpOSC.OscMessage("/marker", rbData.ID, "position", pxt, pyt, pzt);
+                    OSCsender.Send(message);
+                }
+                if (mOscModeIsa || mOscModeTouch)
+                {
+                    message = new SharpOSC.OscMessage("/marker" + rbData.ID + "/position", pxt, pyt, pzt);
+                    OSCsender.Send(message);
+                }
+            }
+
 
             /*  Parsing Rigid Body Frame Data   */
             for (int i = 0; i < mRigidBodies.Count; i++)
@@ -558,7 +591,6 @@ namespace NatNetThree2OSC
                         OSCsender.Send(message);
 
                         break;
-
 
                     case ((int) NatNetML.DataDescriptorType.eRigidbodyData):
                         NatNetML.RigidBody rb = (NatNetML.RigidBody)description[i];

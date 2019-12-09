@@ -31,6 +31,8 @@ upon stream the following messages are sent depending on the OSC Mode
 
 MAX/MSP: OSC MODE = max
 
++ /marker \<markerID> position \<x> \<y> \<z>
+
 + /rigidbody \<rigidbodyID> tracked \<0/1>
 + /rigidbody \<rigidbodyID> position \<x> \<y> \<z>
 + /rigidbody \<rigidbodyID> quat \<qx> \<qy> \<qz> \<qw>
@@ -41,6 +43,8 @@ MAX/MSP: OSC MODE = max
 
 ISADORA: OSC MODE = isadora
 
++ /marker/\<markerID>/position \<x> \<y> \<z>
+
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/quat \<qx> \<qy> \<qz> \<qw>
@@ -50,6 +54,8 @@ ISADORA: OSC MODE = isadora
 + /skeleton/\<skleletonName>/joint/\<boneID>/quat \<qx> \<qy> \<qz> \<qw>
 
 TouchDesigner: OSC MODE = touch
+
++ /marker/\<markerID>/position \<x> \<y> \<z>
 
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
