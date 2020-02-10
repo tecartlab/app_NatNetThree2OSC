@@ -20,6 +20,11 @@ using System.Collections.Generic;
 
 using NatNetML;
 
+using CommandLine;
+using CommandLine.Text;
+
+using System.Linq;
+
 
 /* SampleClientML.cs
  * 
@@ -46,21 +51,63 @@ using NatNetML;
 
 namespace NatNetThree2OSC
 {
+    class Options
+    {
+        [Option("localIP", Required = true, HelpText = "IP address of this machine.")]
+        public string mStrLocalIP { get; set; }
+
+        [Option("motiveIP", Required = true, HelpText = "IP address of the machine Motive is running on.")]
+        public string mStrServerIP { get; set; }
+
+        [Option("oscSendIP", Required = true, HelpText = "IP address of the machine OSC data is sent to.")]
+        public string mStrOscSendIP { get; set; }
+
+        [Option("mulitCastIP", Required = false, Default = "239.255.42.99", HelpText = "Multicast IP Motive is sending on.")]
+        public string mStrMulitCastIP { get; set; }
+
+        [Option("motiveDataPort", Required = false, Default = 1511, HelpText = "Motives data port")]
+        public int mIntMotiveDataPort { get; set; }
+
+        [Option("motiveCmdPort", Required = false, Default = 1510, HelpText = "Motives command port")]
+        public int mIntMotiveCmdPort { get; set; }
+
+        [Option("oscSendPort", Required = true, HelpText = "listening port of the machine OSC data is sent to.")]
+        public int mIntOscSendPort { get; set; }
+
+        [Option("oscCtrlPort", Required = false, Default = 65111, HelpText = "listening port of this service to trigger Motive.")]
+        public int mIntOscCtrlPort { get; set; }
+
+        [Option("oscMode", Separator = ':', Required = false, Default = "max", HelpText = "OSC format (max, isadora, touch)")]
+        public IEnumerable<string> mOscMode { get; set; }
+
+        [Option("yup2zup", Required = false, Default = false, HelpText = "transform y-up to z-up")]
+        public bool myUp2zUp { get; set; }
+
+        [Option("verbose", Required = false, Default = false, HelpText = "verbose mode")]
+        public bool mVerbose { get; set; }
+
+        [Usage(ApplicationAlias = "NatNetThree2OSC")]
+        public static IEnumerable<Example> Examples
+        {
+            get
+            {
+                return new List<Example>() {
+                    new Example("Convert NatNet 3 to OSC messages", new Options { mStrLocalIP = "10.128.96.100" })
+                };
+            }
+        }
+
+    }
+
     public class NatNetThree2OSC
     {
         /*  [NatNet] Network connection configuration    */
         private static NatNetML.NatNetClientML mNatNet;    // The client instance
-        private static string mStrLocalIP = "127.0.0.1";   // Local IP address (string)
-        private static string mStrServerIP = "127.0.0.1";  // Server IP address (string)
-        private static string mStrOscSendIP = "127.0.0.1";   // Local OSC IP address (string)
-        private static int mStrOscSendPort = 54321;   // Local OSC Port (int)
-        private static int mStrOscListeningPort = 55555;   // Local OSC Port (int)
-        private static bool mVerbose = false;    // verbose data (bool)
-        private static string mOscMode = "max";    // osc mode sets the different structures of osc messages 
         private static bool mOscModeMax = true;
         private static bool mOscModeIsa = false;
         private static bool mOscModeTouch = false;
         private static int mUpAxis = 0;
+
         private static NatNetML.ConnectionType mConnectionType = ConnectionType.Multicast; // Multicast or Unicast mode
 
 
@@ -81,65 +128,58 @@ namespace NatNetThree2OSC
 
         static void Main(string[] args)
         {
-            if (args.Length >= 3)
-            {
-                mStrLocalIP = args[0];
-                mStrServerIP = args[1];
-                mStrOscSendIP = args[2];
-            } else
-            {
-                Console.WriteLine("Less than 3 arguments. Ignoring input...");
-            }
-            int j;
-            bool jj;
-            if (args.Length >= 4)
-            {
-                if (Int32.TryParse(args[3], out j))
-                    mStrOscSendPort = j;
-                else
-                    Console.WriteLine("OscSendPort value is no number ({0:N3}). Ignoring input...", args[3]);
-            }
-            if (args.Length >= 5)
-            {
-                if (Int32.TryParse(args[4], out j))
-                    mStrOscListeningPort = j;
-                else
-                    Console.WriteLine("OscListeningPort value is no number ({0:N3}). Ignoring input...", args[4]);
-            }
-            if (args.Length >= 6)
-            {
-                mOscMode = args[5];
-                mOscModeMax = (mOscMode.ToLower().Contains("max")) ? true : false;
-                mOscModeIsa = (mOscMode.ToLower().Contains("isadora")) ? true : false;
-                mOscModeTouch = (mOscMode.ToLower().Contains("touch")) ? true : false;
-                if (!mOscMode.ToLower().Contains("touch") && !mOscMode.ToLower().Contains("isadora") && !mOscMode.ToLower().Contains("max"))
-                    Console.WriteLine("Value is not valid (max, isadora, touch) ({0:N3}). Ignoring input...", args[5]);
-            }
-            if (args.Length >= 7)
-            {
-                if (Int32.TryParse(args[6], out j))
-                    mUpAxis = j;
-                else
-                    Console.WriteLine("upAxis value is no number ({0:N3}). Ignoring input...", args[6]);
-            }
-            if (args.Length == 8)
-            {
-                if (Boolean.TryParse(args[7], out jj))
-                    mVerbose = jj;
-                else
-                    Console.WriteLine("Verbose value is no boolean (true/false) ({0:N3}). Ignoring input...", args[7]);
-            }
-            Console.WriteLine("\n---- NatNetThree2OSC v. 4.0  ----");
-            Console.WriteLine("\n----   20190519 by maybites  ----");
+            Parser.Default.ParseArguments<Options>(args)
+                .WithParsed(Run)
+                .WithNotParsed(HandleParseError);
+        }
 
-            Console.WriteLine("\nNatNetThree2OSC \n\t<NatNetLocal IP \t({0:N3})> \n\t<NatNetServer IP \t({1:N3})> \n\t<OscSendIP \t\t({2:N3})> \n\t<OscSendPort \t\t({3})> \n\t<OscListeningPort \t({4})> \n\t<oscMode \t\t[{5}]> \n\t<upAxis \t\t[{6}]> \n\t<verbose \t\t[{7}]>\n", mStrLocalIP, mStrServerIP, mStrOscSendIP, mStrOscSendPort, mStrOscListeningPort, mOscMode, mUpAxis, mVerbose);
+        private static void HandleParseError(IEnumerable<Error> errs)
+        {
+            if (errs.IsVersion())
+            {
+                Console.WriteLine("Version Request");
+                return;
+            }
+
+            if (errs.IsHelp())
+            {
+                Console.WriteLine("Help Request");
+                return;
+            }
+            Console.WriteLine("Parser Fail");
+        }
+
+        static void Run(Options opts)
+        {
+            mOscModeMax = (opts.mOscMode.Contains("max")) ? true : false;
+            mOscModeIsa = (opts.mOscMode.Contains("isadora")) ? true : false;
+            mOscModeTouch = (opts.mOscMode.Contains("touch")) ? true : false;
+
+            mUpAxis = (opts.myUp2zUp) ? 1 : 0;
+
+            Console.WriteLine("\n---- NatNetThree2OSC v. 5.0  ----");
+            Console.WriteLine("\n----   20200210 by maybites  ----");
+
+            Console.WriteLine("\nNatNetThree2OSC");
+            Console.WriteLine("\t oscSendIP = \t\t({0:N3})", opts.mStrOscSendIP);
+            Console.WriteLine("\t oscSendPort = \t\t({0})", opts.mIntOscSendPort);
+            Console.WriteLine("\t oscCtrlPort = \t\t({0})", opts.mIntOscCtrlPort);
+            Console.WriteLine("\t oscMode = \t\t[{0}]", string.Join(":", opts.mOscMode));
+            Console.WriteLine("\t yup2zup = \t\t[{0}]", opts.myUp2zUp);
+            Console.WriteLine("\n");
+            Console.WriteLine("\t localIP = \t\t({0:N3})", opts.mStrLocalIP);
+            Console.WriteLine("\t motiveIP = \t\t({0:N3})", opts.mStrServerIP);
+            Console.WriteLine("\t multiCastIP = \t\t({0:N3})", opts.mStrMulitCastIP);
+            Console.WriteLine("\t motiveDataPort = \t({0})", opts.mIntMotiveDataPort);
+            Console.WriteLine("\t motiveCmdPort = \t({0})", opts.mIntMotiveCmdPort);
+            Console.WriteLine("\t verbose = \t\t[{0}]", opts.mVerbose);
 
             // intantiate an OSC udp sender
-            OSCsender = new SharpOSC.UDPSender(mStrOscSendIP, mStrOscSendPort);
+            OSCsender = new SharpOSC.UDPSender(opts.mStrOscSendIP, opts.mIntOscSendPort);
 
-            Console.WriteLine("NatNetThree2OSC managed client application starting...\n");
+            Console.WriteLine("\nNatNetThree2OSC managed client application starting...\n");
             /*  [NatNet] Initialize client object and connect to the server  */
-            connectToServer();                          // Initialize a NatNetClient object and connect to a server.
+            connectToServer(opts);                          // Initialize a NatNetClient object and connect to a server.
 
             Console.WriteLine("============================ SERVER DESCRIPTOR ================================\n");
             /*  [NatNet] Confirming Server Connection. Instantiate the server descriptor object and obtain the server description. */
@@ -176,7 +216,7 @@ namespace NatNetThree2OSC
                 }
             };
 
-            var listener = new SharpOSC.UDPListener(mStrOscListeningPort, callback);
+            var listener = new SharpOSC.UDPListener(opts.mIntOscCtrlPort, callback);
 
             while (!(Console.KeyAvailable && Console.ReadKey().Key == ConsoleKey.Escape))
             {
@@ -507,7 +547,7 @@ namespace NatNetThree2OSC
             //Console.WriteLine("\n");
         }
 
-        static void connectToServer()
+        static void connectToServer(Options opts)
         {
             /*  [NatNet] Instantiate the client object  */
             mNatNet = new NatNetML.NatNetClientML();
@@ -518,12 +558,15 @@ namespace NatNetThree2OSC
             Console.WriteLine("NatNet SDK Version: {0}.{1}.{2}.{3}", verNatNet[0], verNatNet[1], verNatNet[2], verNatNet[3]);
 
             /*  [NatNet] Connecting to the Server    */
-            Console.WriteLine("\nConnecting...\n\tLocal IP address: {0}\n\tServer IP Address: {1}\n\n", mStrLocalIP, mStrServerIP);
+            Console.WriteLine("\nConnecting...\n\tLocal IP address: {0}\n\tServer IP Address: {1}\n\n", opts.mStrLocalIP, opts.mStrServerIP);
 
             NatNetClientML.ConnectParams connectParams = new NatNetClientML.ConnectParams();
             connectParams.ConnectionType = mConnectionType;
-            connectParams.ServerAddress = mStrServerIP;
-            connectParams.LocalAddress = mStrLocalIP;
+            connectParams.ServerAddress = opts.mStrServerIP;
+            connectParams.LocalAddress = opts.mStrLocalIP;
+            connectParams.MulticastAddress = opts.mStrMulitCastIP;
+            connectParams.ServerDataPort = (ushort)opts.mIntMotiveDataPort;
+            connectParams.ServerCommandPort = (ushort)opts.mIntMotiveCmdPort;
             mNatNet.Connect( connectParams );
         }
 

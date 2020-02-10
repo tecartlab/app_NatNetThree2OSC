@@ -1,4 +1,4 @@
-NatNetThree2OSC
+NatNetThree2OSC 5.0
 ===================================
 
 
@@ -23,7 +23,20 @@ See License.txt
 Using The Application
 -----------------
 
-Usage: NatNetThree2OSC  <NatNetLocal IP (127.0.0.1)> <NatNetServer IP (127.0.0.1)> <OscSenIP (127.0.0.1)> <OscSendPort (54321)> <OscListeningPort (55555)> <OscMode [max(isadora,touch)]> <upAxis 0=no change, 1=yUp to zUp> <verbose [0/1]>
+Usage: NatNetThree2OSC  
+* **--localIP**          Required. IP address of this machine.
+* **--motiveIP**          Required. IP address of the machine Motive is running on.
+* **--oscSendIP**         Required. IP address of the machine OSC data is sent to.
+* **--mulitCastIP**       (Default: 239.255.42.99) Multicast IP Motive is sending on.
+* **--motiveDataPort**    (Default: 1511) Motives data port
+* **--motiveCmdPort**     (Default: 1510) Motives command port
+* **--oscSendPort**       Required. listening port of the machine OSC data is sent to.
+* **--oscCtrlPort**       (Default: 65111) listening port of this service to trigger Motive.
+* **--oscMode**           (Default: max) OSC format (max, isadora, touch)
+* **--yup2zup**           (Default: false) transform y-up to z-up
+* **--verbose**          (Default: false) verbose mode
+* **--help**              Display this help screen.
+* **--version**           Display version information.
 
 upon stream the following messages are sent depending on the OSC Mode
 
@@ -89,6 +102,10 @@ Building
 This code is based on the NatNet SDK from optitrack (http://optitrack.com/downloads/developer-tools.html) and includes the dll from SharpOSC (https://github.com/ValdemarOrn/SharpOSC).
 
 Open the NatNetSamples inside the /Samples - folder and build NatNetThree2OSC Project
+
+### Dependency
+
+[CommandLine Parser Library](https://github.com/commandlineparser/commandline). How install the package got [here](https://github.com/commandlineparser/commandline/wiki/Getting-Started).
 
 Contribute
 ----------
