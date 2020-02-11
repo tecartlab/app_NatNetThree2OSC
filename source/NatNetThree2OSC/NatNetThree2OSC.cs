@@ -62,8 +62,8 @@ namespace NatNetThree2OSC
         [Option("oscSendIP", Required = true, HelpText = "IP address of the machine OSC data is sent to.")]
         public string mStrOscSendIP { get; set; }
 
-        [Option("mulitCastIP", Required = false, Default = "239.255.42.99", HelpText = "Multicast IP Motive is sending on.")]
-        public string mStrMulitCastIP { get; set; }
+        [Option("multiCastIP", Required = false, Default = "239.255.42.99", HelpText = "Multicast IP Motive is sending on.")]
+        public string mStrMultiCastIP { get; set; }
 
         [Option("motiveDataPort", Required = false, Default = 1511, HelpText = "Motives data port")]
         public int mIntMotiveDataPort { get; set; }
@@ -107,6 +107,7 @@ namespace NatNetThree2OSC
         private static bool mOscModeIsa = false;
         private static bool mOscModeTouch = false;
         private static int mUpAxis = 0;
+        private static bool mVerbose = false;
 
         private static NatNetML.ConnectionType mConnectionType = ConnectionType.Multicast; // Multicast or Unicast mode
 
@@ -156,6 +157,8 @@ namespace NatNetThree2OSC
             mOscModeTouch = (opts.mOscMode.Contains("touch")) ? true : false;
 
             mUpAxis = (opts.myUp2zUp) ? 1 : 0;
+            mVerbose = opts.mVerbose;
+
 
             Console.WriteLine("\n---- NatNetThree2OSC v. 5.0  ----");
             Console.WriteLine("\n----   20200210 by maybites  ----");
@@ -169,7 +172,7 @@ namespace NatNetThree2OSC
             Console.WriteLine("\n");
             Console.WriteLine("\t localIP = \t\t({0:N3})", opts.mStrLocalIP);
             Console.WriteLine("\t motiveIP = \t\t({0:N3})", opts.mStrServerIP);
-            Console.WriteLine("\t multiCastIP = \t\t({0:N3})", opts.mStrMulitCastIP);
+            Console.WriteLine("\t multiCastIP = \t\t({0:N3})", opts.mStrMultiCastIP);
             Console.WriteLine("\t motiveDataPort = \t({0})", opts.mIntMotiveDataPort);
             Console.WriteLine("\t motiveCmdPort = \t({0})", opts.mIntMotiveCmdPort);
             Console.WriteLine("\t verbose = \t\t[{0}]", opts.mVerbose);
@@ -273,6 +276,10 @@ namespace NatNetThree2OSC
         static void fetchFrameData(NatNetML.FrameOfMocapData data, NatNetML.NatNetClientML client)
         {
 
+            if (mVerbose == true)
+            {
+                Console.WriteLine("Fetching new frame data..");
+            }
             /*  Exception handler for cases where assets are added or removed.
                 Data description is re-obtained in the main function so that contents
                 in the frame handler is kept minimal. */
@@ -338,6 +345,10 @@ namespace NatNetThree2OSC
                 }
             }
 
+            if (mVerbose == true)
+            {
+                Console.WriteLine("\tStreaming {0} rigidbodies in frame {1}", mRigidBodies.Count, data.iFrame);
+            }
 
             /*  Parsing Rigid Body Frame Data   */
             for (int i = 0; i < mRigidBodies.Count; i++)
@@ -564,7 +575,7 @@ namespace NatNetThree2OSC
             connectParams.ConnectionType = mConnectionType;
             connectParams.ServerAddress = opts.mStrServerIP;
             connectParams.LocalAddress = opts.mStrLocalIP;
-            connectParams.MulticastAddress = opts.mStrMulitCastIP;
+            connectParams.MulticastAddress = opts.mStrMultiCastIP;
             connectParams.ServerDataPort = (ushort)opts.mIntMotiveDataPort;
             connectParams.ServerCommandPort = (ushort)opts.mIntMotiveCmdPort;
             mNatNet.Connect( connectParams );
@@ -692,7 +703,10 @@ namespace NatNetThree2OSC
 
                     default:
                         // When a Data Set does not match any of the descriptions provided by the SDK.
-                        Console.WriteLine("\tError: Invalid Data Set");
+                        if(mVerbose == true)
+                        {
+                            Console.WriteLine("\tError: Invalid Data Set");
+                        }
                         break;
                 }
             }
