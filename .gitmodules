@@ -1,0 +1,3 @@
+[submodule "dev/Motive2.x"]
+	path = dev/Motive2.x
+	url = https://github.com/tecartlab/app_NetNatThree2OSC.git

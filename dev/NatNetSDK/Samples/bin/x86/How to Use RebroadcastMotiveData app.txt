@@ -1,0 +1,35 @@
+//////////////////////////////////////////////////////////////////////////
+How to guide on using RebroadcastMotiveData CONSOLE APLLICATION
+/////////////////////////////////////////////////////////////////////////
+
+RebroadcastMotiveData is an application that takes commandline arguments.
+
+Run the application from the command prompt or from a batch file is recomended.
+
+To run the serial port protocol (LightCraft Previzion specific):
+./>RebroadcastMotiveData.exe [ip address] [port] lightcraft [test]
+
+	*ip address is the ip address of the machine running Motive. The easiest way to set this
+	up is run RebroadcastMotiveData.exe on the same machine as Motive and pass the loopback
+	ip {127.0.0.1} 
+
+	*port is the serial communication port to send the data out on. This would be a port
+	that is on the same machine that RebroadcastMotiveData is running on example{COM1}
+
+	*lightcraft specifies the type that is being used. It is a required argument to run
+	this protocol.
+
+	*Test is an optional argument that puts the application in tests mode, slowing down
+	the stream of data and including more print outputs
+
+	This protocol tracks a rigid body and sends it back as a camera, formated for spydercam
+	protocol. Create a rigid body in Motive and set the user ID under properties to 42. 
+
+To run the XML protocol (Unity specific)
+./>RebroadcastMotiveData.exe [ip address 1] [ip address 2] unity
+
+	*ip address 1 is the ip address of the machine running motive, where the data is coming 
+	from.
+
+	*ip address 2 is the ip address of the machine recieving the XML packets, where the data
+	is going

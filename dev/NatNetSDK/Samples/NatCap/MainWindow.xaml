@@ -1,0 +1,47 @@
+﻿<Window x:Class="NatCap.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NatCap" Height="600" Width="800" Background="#FF5F5F5F" BorderBrush="#FF333333" ResizeMode="CanResizeWithGrip" WindowStyle="SingleBorderWindow" Closed="Window_Closed" Foreground="#FFD1D1D1">
+
+    <Window.Resources>
+        <ContextMenu x:Key="MyContextMenu">
+            <MenuItem x:Name="clearBoxMenuItem"  Header="Clear" Click="clearBoxMenuItem_Click"/>
+        </ContextMenu>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60" />
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width ="230"/>
+                <ColumnDefinition Width ="75"/>
+                <ColumnDefinition Width ="*"/>
+                <ColumnDefinition Width ="150"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column ="0" Orientation="Horizontal">
+                <ToggleButton Name="buttonStart"  Content="Record" Margin="10" Height="33" HorizontalAlignment="Left" VerticalAlignment="Top" Width="80" Click="buttonStart_Click" IsChecked="False" />
+                <Button Name="buttonStop" Content="Stop" Margin="10" Height="33" HorizontalAlignment="Left" VerticalAlignment="Top" Width="80" Click="buttonStop_Click" />
+            </StackPanel >
+            <TextBlock Name="textBlock1" Grid.Column="1" Height="23" Text="Take Name" Margin="10,10,0,10" VerticalAlignment="Center" HorizontalAlignment="Left" />
+            <TextBox Name="textBox1" Grid.Column="2"  Height="23" HorizontalAlignment="Stretch" Margin="10,10,10,10"  VerticalAlignment="Center" />
+            <ComboBox Name="comboBoxLocal" Grid.Column="3" Height="23" Width="140" SelectionChanged="comboBoxLocal_SelectionChanged" />
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBox Name="textBox2" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" IsReadOnly="True" ContextMenu="{StaticResource MyContextMenu}" />
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" ShowsPreview="True" />
+            <ListBox Name="listBox1" Grid.Column="2" ContextMenu="{StaticResource MyContextMenu}" />
+        </Grid>
+
+    </Grid>
+
+</Window>

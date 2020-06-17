@@ -1,0 +1,6 @@
+﻿  PacketClient.cpp
+d:\03_development\natnetsdk\samples\packetclient\packetclient.cpp(418): warning C4267: "=": Konvertierung von "size_t" nach "unsigned short", Datenverlust möglich
+d:\03_development\natnetsdk\samples\packetclient\packetclient.cpp(473): warning C4267: "=": Konvertierung von "size_t" nach "unsigned short", Datenverlust möglich
+d:\03_development\natnetsdk\samples\packetclient\packetclient.cpp(977): warning C4474: "printf": zu viele Argumente für Formatzeichenfolge übergeben
+  d:\03_development\natnetsdk\samples\packetclient\packetclient.cpp(977): note: Platzhalter und deren Parameter erwarten 1 variadic-Argumente, es wurden aber 2 variadic-Argumente bereitgestellt.
+  PacketClient.vcxproj -> D:\03_Development\NatNetSDK\Samples\PacketClient\..\bin\x86\PacketClient.exe
