@@ -41,6 +41,8 @@ Usage: NatNetThree2OSC
 upon stream the following messages are sent depending on the OSC Mode
 
 + /frame/start \<frameNumber>
++ /frame/timestamp \<secondsSinceMotiveStarted(float)>
++ /frame/timecode \<smtp> \<subframe>
 
 MAX/MSP: OSC MODE = max
 

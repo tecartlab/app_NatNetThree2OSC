@@ -278,7 +278,7 @@ namespace NatNetThree2OSC
 
             if (mVerbose == true)
             {
-                Console.WriteLine("Fetching new frame data..");
+                Console.WriteLine("Fetching new frame data.." + data.fTimestamp);
             }
             /*  Exception handler for cases where assets are added or removed.
                 Data description is re-obtained in the main function so that contents
@@ -295,6 +295,17 @@ namespace NatNetThree2OSC
                 var message = new SharpOSC.OscMessage("/frame/start", data.iFrame);
                 OSCsender.Send(message);
 
+                message = new SharpOSC.OscMessage("/frame/timestamp", (float) data.fTimestamp);
+                OSCsender.Send(message);
+
+                message = new SharpOSC.OscMessage("/frame/timecode", (double) data.Timecode, (double) data.TimecodeSubframe);
+                OSCsender.Send(message);
+
+                /*
+                message = new SharpOSC.OscMessage("/frame/timestamp/transmit", data.TransmitTimestamp.toString());
+                OSCsender.Send(message);
+                */
+
                 /*
                 if (data.bRecording == false)
                     Console.WriteLine("Frame #{0} Received:", data.iFrame);
@@ -302,7 +313,7 @@ namespace NatNetThree2OSC
                     Console.WriteLine("[Recording] Frame #{0} Received:", data.iFrame);
                 */
 
-                 processFrameData(data);
+                processFrameData(data);
 
                 message = new SharpOSC.OscMessage("/frame/end", data.iFrame);
                 OSCsender.Send(message);
