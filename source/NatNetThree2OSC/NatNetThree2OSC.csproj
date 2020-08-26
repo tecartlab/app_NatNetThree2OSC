@@ -86,8 +86,9 @@
       <HintPath>..\..\lib\$(CurrentPlatform)\NatNetML.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="SharpOSC">
-      <HintPath>..\..\lib\x86\SharpOSC.dll</HintPath>
+    <Reference Include="Rug.Osc, Version=1.2.5.17694, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\x86\Rug.Osc.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

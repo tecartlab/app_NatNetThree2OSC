@@ -15,6 +15,7 @@
 
 
 using System;
+using System.Net;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -24,6 +25,9 @@ using CommandLine;
 using CommandLine.Text;
 
 using System.Linq;
+
+//https://bitbucket.org/rugcode/rug.osc
+using Rug.Osc;
 
 
 /* SampleClientML.cs
@@ -125,7 +129,8 @@ namespace NatNetThree2OSC
         private static bool mAssetChanged = false;
 
         // create an OSC Udp sender
-        private static SharpOSC.UDPSender OSCsender;
+   
+        private static OscSender OSCsender;
 
         static void Main(string[] args)
         {
@@ -177,8 +182,20 @@ namespace NatNetThree2OSC
             Console.WriteLine("\t motiveCmdPort = \t({0})", opts.mIntMotiveCmdPort);
             Console.WriteLine("\t verbose = \t\t[{0}]", opts.mVerbose);
 
+            IPAddress ipAddress;
+
+            // parse the ip address
+            if (IPAddress.TryParse(opts.mStrOscSendIP, out ipAddress) == false)
+            {
+                Console.WriteLine("\nInvalid IP address, {0}", opts.mStrOscSendIP);
+
+                return;
+            }
+
             // intantiate an OSC udp sender
-            OSCsender = new SharpOSC.UDPSender(opts.mStrOscSendIP, opts.mIntOscSendPort);
+            OSCsender = new OscSender(ipAddress, opts.mIntOscSendPort);
+
+            OSCsender.Connect();
 
             Console.WriteLine("\nNatNetThree2OSC managed client application starting...\n");
             /*  [NatNet] Initialize client object and connect to the server  */
@@ -205,6 +222,7 @@ namespace NatNetThree2OSC
                 Console.WriteLine("======================== STREAMING IN (PRESS ESC TO EXIT) =====================\n");
             }
 
+            /*
             // The cabllback function for receiveing OSC messages
             SharpOSC.HandleOscPacket callback = delegate (SharpOSC.OscPacket packet)
             {
@@ -218,8 +236,9 @@ namespace NatNetThree2OSC
                     }
                 }
             };
-
             var listener = new SharpOSC.UDPListener(opts.mIntOscCtrlPort, callback);
+
+            */
 
             while (!(Console.KeyAvailable && Console.ReadKey().Key == ConsoleKey.Escape))
             {
@@ -254,7 +273,9 @@ namespace NatNetThree2OSC
             mHtSkelRBs.Clear();
             mForcePlates.Clear();
             mNatNet.Disconnect();
-            listener.Close();
+            //listener.Close();
+
+            OSCsender.Close();
         }
 
          /// <summary>
@@ -292,13 +313,13 @@ namespace NatNetThree2OSC
                 /*  Processing and ouputting frame data every 200th frame.
                     This conditional statement is included in order to simplify the program output */
 
-                var message = new SharpOSC.OscMessage("/frame/start", data.iFrame);
+                var message = new OscMessage("/frame/start", data.iFrame);
                 OSCsender.Send(message);
 
-                message = new SharpOSC.OscMessage("/frame/timestamp", (float) data.fTimestamp);
+                message = new OscMessage("/frame/timestamp", (float) data.fTimestamp);
                 OSCsender.Send(message);
 
-                message = new SharpOSC.OscMessage("/frame/timecode", (double) data.Timecode, (double) data.TimecodeSubframe);
+                message = new OscMessage("/frame/timecode", (double) data.Timecode, (double) data.TimecodeSubframe);
                 OSCsender.Send(message);
 
                 /*
@@ -315,7 +336,7 @@ namespace NatNetThree2OSC
 
                 processFrameData(data);
 
-                message = new SharpOSC.OscMessage("/frame/end", data.iFrame);
+                message = new OscMessage("/frame/end", data.iFrame);
                 OSCsender.Send(message);
             }
         }
@@ -323,7 +344,7 @@ namespace NatNetThree2OSC
         static void processFrameData(NatNetML.FrameOfMocapData data)
         {
 
-            var message = new SharpOSC.OscMessage("/marker");
+            var message = new OscMessage("/marker");
             /*  Parsing marker Frame Data   */
 
             for (int j = 0; j < data.nMarkers; j++)
@@ -346,12 +367,12 @@ namespace NatNetThree2OSC
 
                 if (mOscModeMax)
                 {
-                    message = new SharpOSC.OscMessage("/marker", rbData.ID, "position", pxt, pyt, pzt);
+                    message = new OscMessage("/marker", rbData.ID, "position", pxt, pyt, pzt);
                     OSCsender.Send(message);
                 }
                 if (mOscModeIsa || mOscModeTouch)
                 {
-                    message = new SharpOSC.OscMessage("/marker" + rbData.ID + "/position", pxt, pyt, pzt);
+                    message = new OscMessage("/marker" + rbData.ID + "/position", pxt, pyt, pzt);
                     OSCsender.Send(message);
                 }
             }
@@ -399,27 +420,27 @@ namespace NatNetThree2OSC
                         {
                             if (mOscModeMax)
                             {
-                                message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "tracked", 1);
+                                message = new OscMessage("/rigidbody", rb.ID, "tracked", 1);
                                 OSCsender.Send(message);
-                                message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "position", pxt, pyt, pzt);
+                                message = new OscMessage("/rigidbody", rb.ID, "position", pxt, pyt, pzt);
                                 OSCsender.Send(message);
-                                message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "quat", qxt, qyt, qzt, qwt);
+                                message = new OscMessage("/rigidbody", rb.ID, "quat", qxt, qyt, qzt, qwt);
                                 OSCsender.Send(message);
                             }
                             if (mOscModeIsa)
                             {
-                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/tracked", 1);
+                                message = new OscMessage("/rigidbody/" + rb.ID + "/tracked", 1);
                                 OSCsender.Send(message);
-                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/position", pxt, pyt, pzt);
+                                message = new OscMessage("/rigidbody/" + rb.ID + "/position", pxt, pyt, pzt);
                                 OSCsender.Send(message);
-                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/quat", qxt, qyt, qzt, qwt);
+                                message = new OscMessage("/rigidbody/" + rb.ID + "/quat", qxt, qyt, qzt, qwt);
                                 OSCsender.Send(message);
                             }
                             if (mOscModeTouch)
                             {
-                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/tracked", 1);
+                                message = new OscMessage("/rigidbody/" + rb.ID + "/tracked", 1);
                                 OSCsender.Send(message);
-                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/transformation", pxt, pyt, pzt, qxt, qyt, qzt, qwt);
+                                message = new OscMessage("/rigidbody/" + rb.ID + "/transformation", pxt, pyt, pzt, qxt, qyt, qzt, qwt);
                                 OSCsender.Send(message);
                             }
 
@@ -443,12 +464,12 @@ namespace NatNetThree2OSC
                         {
                             if (mOscModeMax)
                             {
-                                message = new SharpOSC.OscMessage("/rigidbody", rb.ID, "tracked", 0);
+                                message = new OscMessage("/rigidbody", rb.ID, "tracked", 0);
                                 OSCsender.Send(message);
                             }
                             if (mOscModeIsa || mOscModeTouch)
                             {
-                                message = new SharpOSC.OscMessage("/rigidbody/" + rb.ID + "/tracked", 0);
+                                message = new OscMessage("/rigidbody/" + rb.ID + "/tracked", 0);
                                 OSCsender.Send(message);
                             }
                             // HERE AN INFO MESSAGE can be sent that this rigidbody is occluded...(set red...)
@@ -515,27 +536,27 @@ namespace NatNetThree2OSC
                             {
                                 if (mOscModeMax)
                                 {
-                                    message = new SharpOSC.OscMessage("/skeleton/bone", skl.Name, bone.ID, "position", pxt, pyt, pzt);
+                                    message = new OscMessage("/skeleton/bone", skl.Name, bone.ID, "position", pxt, pyt, pzt);
                                     OSCsender.Send(message);
-                                    message = new SharpOSC.OscMessage("/skeleton/bone", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
+                                    message = new OscMessage("/skeleton/bone", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
                                     OSCsender.Send(message);
-                                    message = new SharpOSC.OscMessage("/skeleton/joint", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
+                                    message = new OscMessage("/skeleton/joint", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
                                     OSCsender.Send(message);
                                 }
                                 if (mOscModeIsa)
                                 {
-                                    message = new SharpOSC.OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/position", pxt, pyt, pzt);
+                                    message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/position", pxt, pyt, pzt);
                                     OSCsender.Send(message);
-                                    message = new SharpOSC.OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
+                                    message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
                                     OSCsender.Send(message);
-                                    message = new SharpOSC.OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
+                                    message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
                                     OSCsender.Send(message);
                                 }
                                 if (mOscModeTouch)
                                 {
-                                    message = new SharpOSC.OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/transformation", pxt, pyt, pzt, qxt, qyt, qzt, qwt);
+                                    message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/transformation", pxt, pyt, pzt, qxt, qyt, qzt, qwt);
                                     OSCsender.Send(message);
-                                    message = new SharpOSC.OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
+                                    message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
                                     OSCsender.Send(message);
                                 }
                             }
@@ -652,7 +673,7 @@ namespace NatNetThree2OSC
                     case ((int) NatNetML.DataDescriptorType.eMarkerSetData):
                         NatNetML.MarkerSet mkset = (NatNetML.MarkerSet)description[i];
                         Console.WriteLine("\tMarkerSet ({0})", mkset.Name);
-                        var message = new SharpOSC.OscMessage("/markerset/id", mkset.Name);
+                        var message = new OscMessage("/markerset/id", mkset.Name);
                         OSCsender.Send(message);
 
                         break;
@@ -661,7 +682,7 @@ namespace NatNetThree2OSC
                         NatNetML.RigidBody rb = (NatNetML.RigidBody)description[i];
                         Console.WriteLine("\tRigidBody ({0})", rb.Name);
 
-                        message = new SharpOSC.OscMessage("/rigidbody/id", rb.Name, rb.ID);
+                        message = new OscMessage("/rigidbody/id", rb.Name, rb.ID);
                         OSCsender.Send(message);
 
                         // Saving Rigid Body Descriptions
@@ -673,7 +694,7 @@ namespace NatNetThree2OSC
                         NatNetML.Skeleton skl = (NatNetML.Skeleton)description[i];
                         Console.WriteLine("\tSkeleton ({0}), Bones:", skl.Name);
 
-                        message = new SharpOSC.OscMessage("/skeleton/id", skl.Name, skl.ID);
+                        message = new OscMessage("/skeleton/id", skl.Name, skl.ID);
                         OSCsender.Send(message);
 
                         //Saving Skeleton Descriptions
@@ -682,7 +703,7 @@ namespace NatNetThree2OSC
                         // Saving Individual Bone Descriptions
                         for (int j = 0; j < skl.nRigidBodies; j++)
                         {
-                            message = new SharpOSC.OscMessage("/skeleton/id/bone", skl.Name, skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
+                            message = new OscMessage("/skeleton/id/bone", skl.Name, skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
                             OSCsender.Send(message);
 
                             Console.WriteLine("\t\t{0}. {1}", skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
@@ -697,7 +718,7 @@ namespace NatNetThree2OSC
                         NatNetML.ForcePlate fp = (NatNetML.ForcePlate)description[i];
                         Console.WriteLine("\tForcePlate ({0})", fp.Serial);
 
-                        message = new SharpOSC.OscMessage("/forceplate/id", fp.Serial);
+                        message = new OscMessage("/forceplate/id", fp.Serial);
                         OSCsender.Send(message);
 
                         // Saving Force Plate Channel Names
@@ -705,7 +726,7 @@ namespace NatNetThree2OSC
                
                         for (int j = 0; j < fp.ChannelCount; j++)
                         {
-                            message = new SharpOSC.OscMessage("/forceplate/id/channel", fp.Serial, j + 1, fp.ChannelNames[j]);
+                            message = new OscMessage("/forceplate/id/channel", fp.Serial, j + 1, fp.ChannelNames[j]);
                             OSCsender.Send(message);
 
                             Console.WriteLine("\t\tChannel {0}: {1}", j + 1, fp.ChannelNames[j]);
