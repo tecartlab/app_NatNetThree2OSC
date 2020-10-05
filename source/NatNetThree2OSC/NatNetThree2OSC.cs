@@ -88,14 +88,17 @@ namespace NatNetThree2OSC
         [Option("yup2zup", Required = false, Default = false, HelpText = "transform y-up to z-up")]
         public bool myUp2zUp { get; set; }
 
-        [Option("verbose", Required = false, Default = false, HelpText = "verbose mode")]
-        public bool mVerbose { get; set; }
-
         [Option("matrix", Required = false, Default = false, HelpText = "generates the transformation matrix")]
         public bool mMatrix { get; set; }
 
         [Option("invMatrix", Required = false, Default = false, HelpText = "generates the inverse transformation matrix")]
         public bool mInvMatrix { get; set; }
+
+        [Option("bundled", Required = false, Default = false, HelpText = "bundle the frame messages")]
+        public bool mBundled { get; set; }
+
+        [Option("verbose", Required = false, Default = false, HelpText = "verbose mode")]
+        public bool mVerbose { get; set; }
 
         [Usage(ApplicationAlias = "NatNetThree2OSC")]
         public static IEnumerable<Example> Examples
@@ -119,6 +122,7 @@ namespace NatNetThree2OSC
         private static bool mOscModeTouch = false;
         private static int mUpAxis = 0;
         private static bool mVerbose = false;
+        private static bool mBundled = false;
 
         private static bool mMatrix = false;
         private static bool mInvMatrix = false;
@@ -173,6 +177,7 @@ namespace NatNetThree2OSC
 
             mUpAxis = (opts.myUp2zUp) ? 1 : 0;
             mVerbose = opts.mVerbose;
+            mBundled = opts.mBundled;
 
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
@@ -328,14 +333,14 @@ namespace NatNetThree2OSC
                 /*  Processing and ouputting frame data every 200th frame.
                     This conditional statement is included in order to simplify the program output */
 
-                var message = new OscMessage("/frame/start", data.iFrame);
-                OSCsender.Send(message);
+                var message = new OscMessage("/frame/start", data.iFrame); ;
+                bundle.Add(message);
 
                 message = new OscMessage("/frame/timestamp", (float) data.fTimestamp);
-                OSCsender.Send(message);
+                bundle.Add(message);
 
                 message = new OscMessage("/frame/timecode", (double) data.Timecode, (double) data.TimecodeSubframe);
-                OSCsender.Send(message);
+                bundle.Add(message);
 
                 /*
                 message = new SharpOSC.OscMessage("/frame/timestamp/transmit", data.TransmitTimestamp.toString());
@@ -349,14 +354,27 @@ namespace NatNetThree2OSC
                     Console.WriteLine("[Recording] Frame #{0} Received:", data.iFrame);
                 */
 
-                processFrameData(data);
+                processFrameData(data, bundle);
 
                 message = new OscMessage("/frame/end", data.iFrame);
-                OSCsender.Send(message);
+                bundle.Add(message);
+            }
+
+            if (mBundled)
+            {
+                var bundled = new OscBundle(new OscTimeTag(), bundle.ToArray());
+                OSCsender.Send(bundled);
+            }
+            else
+            {
+                for (int i = 0; i < bundle.Count; i++)
+                {
+                    OSCsender.Send(bundle[i]);
+                }
             }
         }
 
-        static void processFrameData(NatNetML.FrameOfMocapData data)
+        static void processFrameData(NatNetML.FrameOfMocapData data, List<OscPacket> bundle)
         {
 
             var message = new OscMessage("/marker");
@@ -383,12 +401,12 @@ namespace NatNetThree2OSC
                 if (mOscModeMax)
                 {
                     message = new OscMessage("/marker", rbData.ID, "position", pxt, pyt, pzt);
-                    OSCsender.Send(message);
+                    bundle.Add(message);
                 }
                 if (mOscModeIsa || mOscModeTouch)
                 {
                     message = new OscMessage("/marker" + rbData.ID + "/position", pxt, pyt, pzt);
-                    OSCsender.Send(message);
+                    bundle.Add(message);
                 }
             }
 
@@ -450,37 +468,37 @@ namespace NatNetThree2OSC
                             if (mOscModeMax)
                             {
                                 message = new OscMessage("/rigidbody", rb.ID, "tracked", 1);
-                                OSCsender.Send(message);
+                                bundle.Add(message);
                                 message = new OscMessage("/rigidbody", rb.ID, "position", pxt, pyt, pzt);
-                                OSCsender.Send(message);
+                                bundle.Add(message);
                                 message = new OscMessage("/rigidbody", rb.ID, "quat", qxt, qyt, qzt, qwt);
-                                OSCsender.Send(message);
+                                bundle.Add(message);
                                 if (mMatrix || mInvMatrix)
                                 {
                                     message = new OscMessage("/rigidbody", rb.ID, "matrix", mat.M11, mat.M12, mat.M13, mat.M14, mat.M21, mat.M22, mat.M23, mat.M24, mat.M31, mat.M32, mat.M33, mat.M34, mat.M41, mat.M42, mat.M43, mat.M44);
-                                    OSCsender.Send(message);
+                                    bundle.Add(message);
                                     if (mInvMatrix)
                                     {
                                         message = new OscMessage("/rigidbody", rb.ID, "invmatrix", matInv.M11, matInv.M12, matInv.M13, matInv.M14, matInv.M21, matInv.M22, matInv.M23, matInv.M24, matInv.M31, matInv.M32, matInv.M33, matInv.M34, matInv.M41, matInv.M42, matInv.M43, matInv.M44);
-                                        OSCsender.Send(message);
+                                        bundle.Add(message);
                                     }
                                 }
                             }
                             if (mOscModeIsa)
                             {
                                 message = new OscMessage("/rigidbody/" + rb.ID + "/tracked", 1);
-                                OSCsender.Send(message);
+                                bundle.Add(message);
                                 message = new OscMessage("/rigidbody/" + rb.ID + "/position", pxt, pyt, pzt);
-                                OSCsender.Send(message);
+                                bundle.Add(message);
                                 message = new OscMessage("/rigidbody/" + rb.ID + "/quat", qxt, qyt, qzt, qwt);
-                                OSCsender.Send(message);
+                                bundle.Add(message);
                             }
                             if (mOscModeTouch)
                             {
                                 message = new OscMessage("/rigidbody/" + rb.ID + "/tracked", 1);
-                                OSCsender.Send(message);
+                                bundle.Add(message);
                                 message = new OscMessage("/rigidbody/" + rb.ID + "/transformation", pxt, pyt, pzt, qxt, qyt, qzt, qwt);
-                                OSCsender.Send(message);
+                                bundle.Add(message);
                             }
 
                             if (mOscModeIsa || mOscModeTouch)
@@ -488,11 +506,11 @@ namespace NatNetThree2OSC
                                 if (mMatrix || mInvMatrix)
                                 {
                                     message = new OscMessage("/rigidbody/" + rb.ID + "/matrix", mat.M11, mat.M12, mat.M13, mat.M14, mat.M21, mat.M22, mat.M23, mat.M24, mat.M31, mat.M32, mat.M33, mat.M34, mat.M41, mat.M42, mat.M43, mat.M44);
-                                    OSCsender.Send(message);
+                                    bundle.Add(message);
                                     if (mInvMatrix)
                                     {
                                         message = new OscMessage("/rigidbody/" + rb.ID + "/invmatrix", matInv.M11, matInv.M12, matInv.M13, matInv.M14, matInv.M21, matInv.M22, matInv.M23, matInv.M24, matInv.M31, matInv.M32, matInv.M33, matInv.M34, matInv.M41, matInv.M42, matInv.M43, matInv.M44);
-                                        OSCsender.Send(message);
+                                        bundle.Add(message);
                                     }
                                 }
                             }
@@ -517,12 +535,12 @@ namespace NatNetThree2OSC
                             if (mOscModeMax)
                             {
                                 message = new OscMessage("/rigidbody", rb.ID, "tracked", 0);
-                                OSCsender.Send(message);
+                                bundle.Add(message);
                             }
                             if (mOscModeIsa || mOscModeTouch)
                             {
                                 message = new OscMessage("/rigidbody/" + rb.ID + "/tracked", 0);
-                                OSCsender.Send(message);
+                                bundle.Add(message);
                             }
                             // HERE AN INFO MESSAGE can be sent that this rigidbody is occluded...(set red...)
 
@@ -589,27 +607,27 @@ namespace NatNetThree2OSC
                                 if (mOscModeMax)
                                 {
                                     message = new OscMessage("/skeleton/bone", skl.Name, bone.ID, "position", pxt, pyt, pzt);
-                                    OSCsender.Send(message);
+                                    bundle.Add(message);
                                     message = new OscMessage("/skeleton/bone", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
-                                    OSCsender.Send(message);
+                                    bundle.Add(message);
                                     message = new OscMessage("/skeleton/joint", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
-                                    OSCsender.Send(message);
+                                    bundle.Add(message);
                                 }
                                 if (mOscModeIsa)
                                 {
                                     message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/position", pxt, pyt, pzt);
-                                    OSCsender.Send(message);
+                                    bundle.Add(message);
                                     message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
-                                    OSCsender.Send(message);
+                                    bundle.Add(message);
                                     message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
-                                    OSCsender.Send(message);
+                                    bundle.Add(message);
                                 }
                                 if (mOscModeTouch)
                                 {
                                     message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/transformation", pxt, pyt, pzt, qxt, qyt, qzt, qwt);
-                                    OSCsender.Send(message);
+                                    bundle.Add(message);
                                     message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
-                                    OSCsender.Send(message);
+                                    bundle.Add(message);
                                 }
                             }
                         }
