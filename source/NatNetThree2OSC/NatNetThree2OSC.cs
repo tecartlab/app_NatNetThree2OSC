@@ -90,6 +90,12 @@ namespace NatNetThree2OSC
         [Option("verbose", Required = false, Default = false, HelpText = "verbose mode")]
         public bool mVerbose { get; set; }
 
+        [Option("generateMatrix", Required = false, Default = false, HelpText = "generates the transformation matrix")]
+        public bool mMatrix { get; set; }
+
+        [Option("generateInvMatrix", Required = false, Default = false, HelpText = "generates the inverse transformation matrix")]
+        public bool mInvMatrix { get; set; }
+
         [Usage(ApplicationAlias = "NatNetThree2OSC")]
         public static IEnumerable<Example> Examples
         {
@@ -112,6 +118,9 @@ namespace NatNetThree2OSC
         private static bool mOscModeTouch = false;
         private static int mUpAxis = 0;
         private static bool mVerbose = false;
+
+        private static bool mMatrix = false;
+        private static bool mInvMatrix = false;
 
         private static NatNetML.ConnectionType mConnectionType = ConnectionType.Multicast; // Multicast or Unicast mode
 
@@ -164,6 +173,8 @@ namespace NatNetThree2OSC
             mUpAxis = (opts.myUp2zUp) ? 1 : 0;
             mVerbose = opts.mVerbose;
 
+            mMatrix = opts.mMatrix;
+            mInvMatrix = opts.mInvMatrix;
 
             Console.WriteLine("\n---- NatNetThree2OSC v. 5.0  ----");
             Console.WriteLine("\n----   20200210 by maybites  ----");
@@ -173,6 +184,8 @@ namespace NatNetThree2OSC
             Console.WriteLine("\t oscSendPort = \t\t({0})", opts.mIntOscSendPort);
             Console.WriteLine("\t oscCtrlPort = \t\t({0})", opts.mIntOscCtrlPort);
             Console.WriteLine("\t oscMode = \t\t[{0}]", string.Join(":", opts.mOscMode));
+            Console.WriteLine("\t matrix = \t\t[{0}]", opts.mMatrix);
+            Console.WriteLine("\t invmatrix = \t\t[{0}]", opts.mInvMatrix);
             Console.WriteLine("\t yup2zup = \t\t[{0}]", opts.myUp2zUp);
             Console.WriteLine("\n");
             Console.WriteLine("\t localIP = \t\t({0:N3})", opts.mStrLocalIP);
@@ -414,6 +427,10 @@ namespace NatNetThree2OSC
                             qyt = rbData.qy;
                             qzt = rbData.qz;
                             qwt = rbData.qw;
+                        }
+
+                        if (mMatrix || mInvMatrix)
+                        {
                         }
 
                         if (rbData.Tracked == true)
@@ -748,7 +765,7 @@ namespace NatNetThree2OSC
         {
             return dRads * (180.0f / Math.PI);
         }
-        
+
         static int LowWord(int number)
         {
             return number & 0xFFFF;
