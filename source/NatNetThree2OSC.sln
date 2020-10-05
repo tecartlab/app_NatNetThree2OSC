@@ -1,9 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 14 for Windows Desktop
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1259
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleClient3D", "SampleClient3D\SampleClient3D.vcxproj", "{094EC013-36C7-4BA0-82D2-A628AD0FB19F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NatNetThree2OSC", "NatNetThree2OSC\NatNetThree2OSC.csproj", "{EB3A0909-5CE7-46A9-86BB-B180ADC03980}"
 EndProject
 Global
@@ -18,22 +16,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Debug|Win32.ActiveCfg = Release|Win32
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Debug|Win32.Build.0 = Release|Win32
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Debug|x64.ActiveCfg = Release|x64
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Debug|x64.Build.0 = Release|x64
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Debug|x86.ActiveCfg = Release|Win32
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Debug|x86.Build.0 = Release|Win32
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Release|Win32.ActiveCfg = Release|Win32
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Release|Win32.Build.0 = Release|Win32
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Release|x64.ActiveCfg = Release|x64
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Release|x64.Build.0 = Release|x64
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Release|x86.ActiveCfg = Release|Win32
-		{094EC013-36C7-4BA0-82D2-A628AD0FB19F}.Release|x86.Build.0 = Release|Win32
 		{EB3A0909-5CE7-46A9-86BB-B180ADC03980}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{EB3A0909-5CE7-46A9-86BB-B180ADC03980}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{EB3A0909-5CE7-46A9-86BB-B180ADC03980}.Debug|Win32.ActiveCfg = Debug|x86
@@ -53,5 +35,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A2B8F6B4-9F36-433A-9C4B-56FA6E35C328}
 	EndGlobalSection
 EndGlobal

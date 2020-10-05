@@ -18,6 +18,7 @@ using System;
 using System.Net;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 
 using NatNetML;
 
@@ -90,10 +91,10 @@ namespace NatNetThree2OSC
         [Option("verbose", Required = false, Default = false, HelpText = "verbose mode")]
         public bool mVerbose { get; set; }
 
-        [Option("generateMatrix", Required = false, Default = false, HelpText = "generates the transformation matrix")]
+        [Option("matrix", Required = false, Default = false, HelpText = "generates the transformation matrix")]
         public bool mMatrix { get; set; }
 
-        [Option("generateInvMatrix", Required = false, Default = false, HelpText = "generates the inverse transformation matrix")]
+        [Option("invMatrix", Required = false, Default = false, HelpText = "generates the inverse transformation matrix")]
         public bool mInvMatrix { get; set; }
 
         [Usage(ApplicationAlias = "NatNetThree2OSC")]
@@ -309,6 +310,7 @@ namespace NatNetThree2OSC
         /// <param name="client">The NatNet client instance</param>
         static void fetchFrameData(NatNetML.FrameOfMocapData data, NatNetML.NatNetClientML client)
         {
+            List<OscPacket> bundle = new List<OscPacket>();
 
             if (mVerbose == true)
             {
@@ -429,8 +431,18 @@ namespace NatNetThree2OSC
                             qwt = rbData.qw;
                         }
 
+                        var mat = Matrix4x4.Identity;
+                        var matInv = Matrix4x4.Identity;
                         if (mMatrix || mInvMatrix)
                         {
+                            var qt = new Quaternion(qxt, qyt, qzt, qwt);
+                            var mr = Matrix4x4.CreateFromQuaternion(qt);
+                            var mt = Matrix4x4.CreateTranslation(pxt, pyt, pzt);
+                            mat = Matrix4x4.Multiply(mr, mt);
+                            if (mInvMatrix)
+                            {
+                                Matrix4x4.Invert(mat, out matInv);
+                            }
                         }
 
                         if (rbData.Tracked == true)
@@ -443,6 +455,16 @@ namespace NatNetThree2OSC
                                 OSCsender.Send(message);
                                 message = new OscMessage("/rigidbody", rb.ID, "quat", qxt, qyt, qzt, qwt);
                                 OSCsender.Send(message);
+                                if (mMatrix || mInvMatrix)
+                                {
+                                    message = new OscMessage("/rigidbody", rb.ID, "matrix", mat.M11, mat.M12, mat.M13, mat.M14, mat.M21, mat.M22, mat.M23, mat.M24, mat.M31, mat.M32, mat.M33, mat.M34, mat.M41, mat.M42, mat.M43, mat.M44);
+                                    OSCsender.Send(message);
+                                    if (mInvMatrix)
+                                    {
+                                        message = new OscMessage("/rigidbody", rb.ID, "invmatrix", matInv.M11, matInv.M12, matInv.M13, matInv.M14, matInv.M21, matInv.M22, matInv.M23, matInv.M24, matInv.M31, matInv.M32, matInv.M33, matInv.M34, matInv.M41, matInv.M42, matInv.M43, matInv.M44);
+                                        OSCsender.Send(message);
+                                    }
+                                }
                             }
                             if (mOscModeIsa)
                             {
@@ -461,6 +483,19 @@ namespace NatNetThree2OSC
                                 OSCsender.Send(message);
                             }
 
+                            if (mOscModeIsa || mOscModeTouch)
+                            {
+                                if (mMatrix || mInvMatrix)
+                                {
+                                    message = new OscMessage("/rigidbody/" + rb.ID + "/matrix", mat.M11, mat.M12, mat.M13, mat.M14, mat.M21, mat.M22, mat.M23, mat.M24, mat.M31, mat.M32, mat.M33, mat.M34, mat.M41, mat.M42, mat.M43, mat.M44);
+                                    OSCsender.Send(message);
+                                    if (mInvMatrix)
+                                    {
+                                        message = new OscMessage("/rigidbody/" + rb.ID + "/invmatrix", matInv.M11, matInv.M12, matInv.M13, matInv.M14, matInv.M21, matInv.M22, matInv.M23, matInv.M24, matInv.M31, matInv.M32, matInv.M33, matInv.M34, matInv.M41, matInv.M42, matInv.M43, matInv.M44);
+                                        OSCsender.Send(message);
+                                    }
+                                }
+                            }
                             /*
                             Console.WriteLine("\tRigidBody ({0}):", rb.Name);
                             Console.WriteLine("\t\tpos ({0:N3}, {1:N3}, {2:N3})", rbData.x, rbData.y, rbData.z);
