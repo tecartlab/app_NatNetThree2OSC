@@ -1,5 +1,5 @@
 ﻿//=============================================================================
-// Copyright © 2017 NaturalPoint, Inc. All Rights Reserved.
+// Copyright © 2020 Tecartlab.com
 // 
 // This software is provided by the copyright holders and contributors "as is" and
 // any express or implied warranties, including, but not limited to, the implied
@@ -27,19 +27,17 @@ using CommandLine.Text;
 
 using System.Linq;
 
-//https://bitbucket.org/rugcode/rug.osc
-using Rug.Osc;
+using SharpOSC;
 
 
-/* SampleClientML.cs
+/* NatNetThree2OSC.cs
  * 
- * This program is a sample console application which uses the managed NatNet assembly (NatNetML.dll) for receiving NatNet data
- * from a tracking server (e.g. Motive) and outputting them in every 200 mocap frames. This is provided mainly for demonstration purposes,
- * and thus, the program is designed at its simpliest approach. The program connects to a server application at a localhost IP address
- * (127.0.0.1) using Multicast connection protocol.
+ * This program is a console application which uses the managed NatNet assembly (NatNetML.dll) for receiving NatNet data
+ * from a tracking server (e.g. Motive) and outputting as OSC messages or OSC bundles. 
+ * The program connects to a server application at a süecified IP address using Multicast connection protocol.
  *  
- * You may integrate this program into your applications if needed. This program is not designed to take account for latency/frame build up
- * when tracking a high number of assets. For more robust and comprehensive use of the NatNet assembly, refer to the provided WinFormSample project.
+ * You may integrate this program into your pipeline if needed. This program is not designed to take account for latency/frame build up
+ * when tracking a high number of assets.
  * 
  *  Note: The NatNet .NET assembly is derived from the native NatNetLib.dll library, so make sure the NatNetLib.dll is linked to your application
  *        along with the NatNetML.dll file.  
@@ -144,7 +142,7 @@ namespace NatNetThree2OSC
 
         // create an OSC Udp sender
    
-        private static OscSender OSCsender;
+        private static UDPSender OSCsender;
 
         static void Main(string[] args)
         {
@@ -182,8 +180,8 @@ namespace NatNetThree2OSC
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
 
-            Console.WriteLine("\n---- NatNetThree2OSC v. 5.0  ----");
-            Console.WriteLine("\n----   20200210 by maybites  ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 6.0  ----");
+            Console.WriteLine("\n----   20201006 by maybites  ----");
 
             Console.WriteLine("\nNatNetThree2OSC");
             Console.WriteLine("\t oscSendIP = \t\t({0:N3})", opts.mStrOscSendIP);
@@ -212,9 +210,9 @@ namespace NatNetThree2OSC
             }
 
             // intantiate an OSC udp sender
-            OSCsender = new OscSender(ipAddress, opts.mIntOscSendPort);
+            OSCsender = new UDPSender(ipAddress.ToString(), opts.mIntOscSendPort);
 
-            OSCsender.Connect();
+            //OSCsender.Connect();
 
             Console.WriteLine("\nNatNetThree2OSC managed client application starting...\n");
             /*  [NatNet] Initialize client object and connect to the server  */
@@ -241,7 +239,6 @@ namespace NatNetThree2OSC
                 Console.WriteLine("======================== STREAMING IN (PRESS ESC TO EXIT) =====================\n");
             }
 
-            /*
             // The cabllback function for receiveing OSC messages
             SharpOSC.HandleOscPacket callback = delegate (SharpOSC.OscPacket packet)
             {
@@ -257,7 +254,6 @@ namespace NatNetThree2OSC
             };
             var listener = new SharpOSC.UDPListener(opts.mIntOscCtrlPort, callback);
 
-            */
 
             while (!(Console.KeyAvailable && Console.ReadKey().Key == ConsoleKey.Escape))
             {
@@ -315,7 +311,7 @@ namespace NatNetThree2OSC
         /// <param name="client">The NatNet client instance</param>
         static void fetchFrameData(NatNetML.FrameOfMocapData data, NatNetML.NatNetClientML client)
         {
-            List<OscPacket> bundle = new List<OscPacket>();
+            List<OscMessage> bundle = new List<OscMessage>();
 
             if (mVerbose == true)
             {
@@ -362,7 +358,7 @@ namespace NatNetThree2OSC
 
             if (mBundled)
             {
-                var bundled = new OscBundle(new OscTimeTag(), bundle.ToArray());
+                var bundled = new OscBundle((ulong)(data.fTimestamp * 1000), bundle.ToArray());
                 OSCsender.Send(bundled);
             }
             else
@@ -374,7 +370,7 @@ namespace NatNetThree2OSC
             }
         }
 
-        static void processFrameData(NatNetML.FrameOfMocapData data, List<OscPacket> bundle)
+        static void processFrameData(NatNetML.FrameOfMocapData data, List<OscMessage> bundle)
         {
 
             var message = new OscMessage("/marker");

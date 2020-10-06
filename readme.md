@@ -1,10 +1,9 @@
-NatNetThree2OSC 5.0
+NatNetThree2OSC 6.0
 ===================================
 
 
 NatNetThree2OSC is a small app designed to convert the Optitrack NatNet 3.0 protocoll to Open Sound Control (OSC). It provides the following features:
 
-+ connects ...
 + Sends an OSC Packet from NatNet Packet.
 + Receive OSC packets via UDP.
 
@@ -34,7 +33,10 @@ Usage: NatNetThree2OSC
 * **--oscCtrlPort**       (Default: 65111) listening port of this service to trigger Motive.
 * **--oscMode**           (Default: max) OSC format (max, isadora, touch)
 * **--yup2zup**           (Default: false) transform y-up to z-up
-* **--verbose**          (Default: false) verbose mode
+* **--matrix**            (Default: false) calculate and send the transformation matrix
+* **--invmatrix**         (Default: false) calculate and send the inverse transformation matrix
+* **--bundled**           (Default: false) send the frame message inside an osc bundle
+* **--verbose**           (Default: false) verbose mode
 * **--help**              Display this help screen.
 * **--version**           Display version information.
 
@@ -47,34 +49,38 @@ upon stream the following messages are sent depending on the OSC Mode
 MAX/MSP: OSC MODE = max
 
 + /marker \<markerID> position \<x> \<y> \<z>
-
 + /rigidbody \<rigidbodyID> tracked \<0/1>
 + /rigidbody \<rigidbodyID> position \<x> \<y> \<z>
 + /rigidbody \<rigidbodyID> quat \<qx> \<qy> \<qz> \<qw>
-
++ /rigidbody \<rigidbodyID> matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
++ /rigidbody \<rigidbodyID> invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
 + /skeleton/bone \<skleletonName> \<boneID> position \<x> \<y> \<z>
 + /skeleton/bone \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
 + /skeleton/joint \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
 
+(!) - will only be sent if the CLI flags are set.
+
 ISADORA: OSC MODE = isadora
 
 + /marker/\<markerID>/position \<x> \<y> \<z>
-
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/quat \<qx> \<qy> \<qz> \<qw>
-
++ /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
++ /rigidbody/\<rigidbodyID>/invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
 + /skeleton/\<skleletonName>/bone/\<boneID>/position \<x> \<y> \<z>
 + /skeleton/\<skleletonName>/bone/\<boneID>/quat \<qx> \<qy> \<qz> \q<w>
 + /skeleton/\<skleletonName>/joint/\<boneID>/quat \<qx> \<qy> \<qz> \<qw>
 
+(!) - will only be sent if the CLI flags are set.
+
 TouchDesigner: OSC MODE = touch
 
 + /marker/\<markerID>/position \<x> \<y> \<z>
-
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
-
++ /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
++ /rigidbody/\<rigidbodyID>/invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
 + /skeleton/\<skleletonName>/bone/\<boneID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 + /skeleton/\<skleletonName>/joint/\<boneID>/quat \<x> \<y> \<z> \<w>
 
