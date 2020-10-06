@@ -2,7 +2,7 @@ NatNetThree2OSC 6.0
 ===================================
 
 
-NatNetThree2OSC is a small app designed to convert the Optitrack NatNet 3.0 protocoll to Open Sound Control (OSC). It provides the following features:
+NatNetThree2OSC is a small app designed to convert the Optitrack NatNet 3.1 protocoll to Open Sound Control (OSC). It provides the following features:
 
 + Sends an OSC Packet from NatNet Packet.
 + Receive OSC packets via UDP.
@@ -40,11 +40,16 @@ Usage: NatNetThree2OSC
 * **--help**              Display this help screen.
 * **--version**           Display version information.
 
-upon stream the following messages are sent depending on the OSC Mode
+
+### Streaming
+
+when streaming, the following messages are sent at the beginning of each frame
 
 + /frame/start \<frameNumber>
 + /frame/timestamp \<secondsSinceMotiveStarted(float)>
 + /frame/timecode \<smtp> \<subframe>
+
+upon streaming the following messages are sent depending on the OSC Mode
 
 MAX/MSP: OSC MODE = max
 
@@ -89,6 +94,8 @@ IF you want to have multiple modes, set the oscmode like "max,isadora" or "isado
 At the end of the frame the frameend message is sent
 
 + /frame/end \<frameNumber>
+
+### Remote control
 
 sending commands to the <OscListeningPort> will pass commands to Motive:
 
