@@ -185,7 +185,7 @@ DWORD WINAPI DataListenThread(void* dummy)
         // Block until we receive a datagram from the network (from anyone including ourselves)
         int nDataBytesReceived = recvfrom(DataSocket, szData, sizeof(szData), 0, (sockaddr *)&TheirAddress, &addr_len);
         // Once we have bytes recieved Unpack organizes all the data
-        //Unpack(szData);
+        Unpack(szData);
     }
 
     return 0;
@@ -358,10 +358,6 @@ int main(int argc, char* argv[])
     HostAddr.sin_port = htons(PORT_COMMAND); 
     HostAddr.sin_addr = ServerAddress;
 
-	/***********************************************************************************************/
-	//       STARTING PACKAGE CLIENT
-	/***********************************************************************************************/
-
     // send initial connect request
     sPacket PacketOut;
     PacketOut.iMessage = NAT_CONNECT;
@@ -369,14 +365,13 @@ int main(int argc, char* argv[])
     int nTries = 3;
     while (nTries--)
     {
-		printf("Sending Connection Packet...\n\n");
-		int iRet = sendto(CommandSocket, (char *)&PacketOut, 4 + PacketOut.nDataBytes, 0, (sockaddr *)&HostAddr, sizeof(HostAddr));
+        int iRet = sendto(CommandSocket, (char *)&PacketOut, 4 + PacketOut.nDataBytes, 0, (sockaddr *)&HostAddr, sizeof(HostAddr));
         if(iRet != SOCKET_ERROR)
             break;
     }
 
 
-    printf("...Packet Client started\n\n");
+    printf("Packet Client started\n\n");
     printf("Commands:\ns\tsend data descriptions\nf\tsend frame of data\nt\tsend test request\nq\tquit\n\n");
     int c;
     char szRequest[512];

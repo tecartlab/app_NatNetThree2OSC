@@ -133,6 +133,17 @@ NatNetClientML encapsulates all functionality required to receive data
 from a NatNet Server application, Motive.
 </summary>
         </member>
+        <member name="F:NatNetML.NatNetPacket.Payload">
+            <summary>Message payload.</summary>
+        </member>
+        <member name="F:NatNetML.NatNetPacket.MessageId">
+            <summary>Message type.</summary>
+        </member>
+        <member name="T:NatNetML.NatNetPacket">
+            <summary>
+A NatNet message packet.
+</summary>
+        </member>
         <member name="F:NatNetML.ServerDescription.ConnectionMulticastAddress">
             <summary>The multicast group address to use for a multicast connection.</summary>
         </member>
