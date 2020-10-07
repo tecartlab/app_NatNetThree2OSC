@@ -189,7 +189,7 @@ namespace NatNetThree2OSC
             Console.WriteLine("\t oscCtrlPort = \t\t({0})", opts.mIntOscCtrlPort);
             Console.WriteLine("\t oscMode = \t\t[{0}]", string.Join(":", opts.mOscMode));
             Console.WriteLine("\t matrix = \t\t[{0}]", opts.mMatrix);
-            Console.WriteLine("\t invmatrix = \t\t[{0}]", opts.mInvMatrix);
+            Console.WriteLine("\t invMatrix = \t\t[{0}]", opts.mInvMatrix);
             Console.WriteLine("\t yup2zup = \t\t[{0}]", opts.myUp2zUp);
             Console.WriteLine("\n");
             Console.WriteLine("\t localIP = \t\t({0:N3})", opts.mStrLocalIP);

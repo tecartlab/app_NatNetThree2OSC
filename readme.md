@@ -34,7 +34,7 @@ Usage: NatNetThree2OSC
 * **--oscMode**           (Default: max) OSC format (max, isadora, touch)
 * **--yup2zup**           (Default: false) transform y-up to z-up
 * **--matrix**            (Default: false) calculate and send the transformation matrix
-* **--invmatrix**         (Default: false) calculate and send the inverse transformation matrix
+* **--invMatrix**         (Default: false) calculate and send the inverse transformation matrix
 * **--bundled**           (Default: false) send the frame message inside an osc bundle
 * **--verbose**           (Default: false) verbose mode
 * **--help**              Display this help screen.
