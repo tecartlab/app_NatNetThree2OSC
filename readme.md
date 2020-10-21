@@ -1,4 +1,4 @@
-NatNetThree2OSC 6.0
+NatNetThree2OSC 7.0
 ===================================
 
 
@@ -32,7 +32,9 @@ Usage: NatNetThree2OSC
 * **--oscSendPort**       Required. listening port of the machine OSC data is sent to.
 * **--oscCtrlPort**       (Default: 65111) listening port of this service to trigger Motive.
 * **--oscMode**           (Default: max) OSC format (max, isadora, touch)
+* **--sendSkeletons**     (Default: false) send skeleton data
 * **--yup2zup**           (Default: false) transform y-up to z-up
+* **--leftHanded**        (Default: false) transform right handed to left handed coordinate system
 * **--matrix**            (Default: false) calculate and send the transformation matrix
 * **--invMatrix**         (Default: false) calculate and send the inverse transformation matrix
 * **--bundled**           (Default: false) send the frame message inside an osc bundle
@@ -101,9 +103,22 @@ sending commands to the <OscListeningPort> will pass commands to Motive:
 
 the following commands are implemented:
 
-+ /commands refetch
++ /motive/command refetch
 
 will return all rigidbodies and skeletons currently streaming
+
++ /oscModeMax (0..1) will start/stop streaming max type messages
++ /oscModeIsadora (0..1) will start/stop streaming isadora type messages
++ /oscModeTouch (0..1) will start/stop streaming touchdesigner type messages
++ /sendSkeletons (0..1) will start/stop streaming skeleton data
++ /verbose (0..1) will start/stop outputing verbose messages
++ /zUpAxis (0..1) 1 = will transform to zUp orientation
++ /leftHanded (0..1) 1 = will transform to left handed orientation
++ /bundled (0..1) will start/stop bundle the osc messages
++ /calcMatrix (0..1) 1 = will start/stop calculate the transformation matrix
++ /calcInvMatrix (0..1) 1 = will start/stop calculate the inverse transformation matrix
+
+
 
 + /rigidbody/id \<rigidbodyName> \<rigidbodyID>
 + /skeleton/id \<skleletonName> \<SkeletonID>

@@ -83,8 +83,14 @@ namespace NatNetThree2OSC
         [Option("oscMode", Separator = ':', Required = false, Default = "max", HelpText = "OSC format (max, isadora, touch)")]
         public IEnumerable<string> mOscMode { get; set; }
 
+        [Option("sendSkeletons", Required = false, Default = false, HelpText = "send skeleton data")]
+        public bool mySendSkeletons { get; set; }
+
         [Option("yup2zup", Required = false, Default = false, HelpText = "transform y-up to z-up")]
         public bool myUp2zUp { get; set; }
+
+        [Option("leftHanded", Required = false, Default = false, HelpText = "transform right handed to left handed coordinate system")]
+        public bool myleftHanded { get; set; }
 
         [Option("matrix", Required = false, Default = false, HelpText = "generates the transformation matrix")]
         public bool mMatrix { get; set; }
@@ -119,6 +125,8 @@ namespace NatNetThree2OSC
         private static bool mOscModeIsa = false;
         private static bool mOscModeTouch = false;
         private static int mUpAxis = 0;
+        private static bool mleftHanded = false;
+        private static bool mSendSkeletons = false;
         private static bool mVerbose = false;
         private static bool mBundled = false;
 
@@ -174,6 +182,8 @@ namespace NatNetThree2OSC
             mOscModeTouch = (opts.mOscMode.Contains("touch")) ? true : false;
 
             mUpAxis = (opts.myUp2zUp) ? 1 : 0;
+            mleftHanded = opts.myleftHanded;
+            mSendSkeletons = opts.mySendSkeletons;
             mVerbose = opts.mVerbose;
             mBundled = opts.mBundled;
 
@@ -188,9 +198,11 @@ namespace NatNetThree2OSC
             Console.WriteLine("\t oscSendPort = \t\t({0})", opts.mIntOscSendPort);
             Console.WriteLine("\t oscCtrlPort = \t\t({0})", opts.mIntOscCtrlPort);
             Console.WriteLine("\t oscMode = \t\t[{0}]", string.Join(":", opts.mOscMode));
+            Console.WriteLine("\t sendSkeletons = \t\t[{0}]", opts.mySendSkeletons);
             Console.WriteLine("\t matrix = \t\t[{0}]", opts.mMatrix);
             Console.WriteLine("\t invMatrix = \t\t[{0}]", opts.mInvMatrix);
             Console.WriteLine("\t yup2zup = \t\t[{0}]", opts.myUp2zUp);
+            Console.WriteLine("\t leftHanded = \t\t[{0}]", opts.myleftHanded);
             Console.WriteLine("\n");
             Console.WriteLine("\t localIP = \t\t({0:N3})", opts.mStrLocalIP);
             Console.WriteLine("\t motiveIP = \t\t({0:N3})", opts.mStrServerIP);
@@ -243,7 +255,7 @@ namespace NatNetThree2OSC
             SharpOSC.HandleOscPacket callback = delegate (SharpOSC.OscPacket packet)
             {
                 var messageReceived = (SharpOSC.OscMessage)packet;
-                if (messageReceived != null && messageReceived.Address.Equals(value: "/command"))
+                if (messageReceived != null && messageReceived.Address.Equals(value: "/motive/command"))
                 {
                     if(messageReceived.Arguments.Count > 0 && messageReceived.Arguments.IndexOf("refetch") != -1)
                     {
@@ -251,7 +263,90 @@ namespace NatNetThree2OSC
                         mAssetChanged = true;
                     }
                 }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/oscModeMax"))
+                {
+                   if (messageReceived.Arguments.Count > 0)
+                    {
+                        mOscModeMax = ((int)messageReceived.Arguments[0] == 1)?true:false;
+                        Console.WriteLine("received /oscModeMax " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/oscModeIsaodra"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mOscModeIsa = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /oscModeIsaodra " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/oscModeTouch"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mOscModeTouch = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /oscModeTouch " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/leftHanded"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mleftHanded = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /leftHanded " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/zUpAxis"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mUpAxis = ((int)messageReceived.Arguments[0] == 1) ? 1 : 0;
+                        Console.WriteLine("received /zUpAxis " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/sendSkeletons"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mSendSkeletons = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /sendSkeletons " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/verbose"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mVerbose = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /verbose " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/bundled"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mBundled = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /bundled " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/calcMatrix"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mMatrix = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /calcMatrix " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/calcInvMatrix"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mInvMatrix = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /calcInvMatrix " + messageReceived.Arguments[0]);
+                    }
+                }
+
             };
+
+
             var listener = new SharpOSC.UDPListener(opts.mIntOscCtrlPort, callback);
 
 
@@ -394,6 +489,11 @@ namespace NatNetThree2OSC
                     pzt = rbData.z;
                 }
 
+                if (mleftHanded)
+                {
+                    pxt = -pxt;
+                }
+
                 if (mOscModeMax)
                 {
                     message = new OscMessage("/marker", rbData.ID, "position", pxt, pyt, pzt);
@@ -443,6 +543,13 @@ namespace NatNetThree2OSC
                             qyt = rbData.qy;
                             qzt = rbData.qz;
                             qwt = rbData.qw;
+                        }
+
+                        if (mleftHanded)
+                        {
+                            pxt = -pxt;
+                            qyt = -qyt;
+                            qzt = -qzt;
                         }
 
                         var mat = Matrix4x4.Identity;
@@ -546,91 +653,102 @@ namespace NatNetThree2OSC
                 }
             }
 
-            /* Parsing Skeleton Frame Data  */
-            for (int i = 0; i < mSkeletons.Count; i++)      // Fetching skeleton IDs from the saved descriptions
+            if (mSendSkeletons)
             {
-                int sklID = mSkeletons[i].ID;
-
-                for (int j = 0; j < data.nSkeletons; j++)
+                /* Parsing Skeleton Frame Data  */
+                for (int i = 0; i < mSkeletons.Count; i++)      // Fetching skeleton IDs from the saved descriptions
                 {
-                    if (sklID == data.Skeletons[j].ID)      // When skeleton ID of the description matches skeleton ID of the frame data.
+                    int sklID = mSkeletons[i].ID;
+
+                    for (int j = 0; j < data.nSkeletons; j++)
                     {
-                        NatNetML.Skeleton skl = mSkeletons[i];              // Saved skeleton descriptions
-                        NatNetML.SkeletonData sklData = data.Skeletons[j];  // Received skeleton frame data
-
-
-                        //Console.WriteLine("\tSkeleton ({0}):", skl.Name);
-                        //Console.WriteLine("\t\tSegment count: {0}", sklData.nRigidBodies);
-
-                        //  Now, for each of the skeleton segments 
-                        for (int k = 0; k < sklData.nRigidBodies; k++)
+                        if (sklID == data.Skeletons[j].ID)      // When skeleton ID of the description matches skeleton ID of the frame data.
                         {
+                            NatNetML.Skeleton skl = mSkeletons[i];              // Saved skeleton descriptions
+                            NatNetML.SkeletonData sklData = data.Skeletons[j];  // Received skeleton frame data
 
-                            NatNetML.RigidBodyData boneData = sklData.RigidBodies[k];
 
-                            float pxt, pyt, pzt, qxt, qyt, qzt, qwt = 0.0f;
-                            if (mUpAxis == 1)
+                            //Console.WriteLine("\tSkeleton ({0}):", skl.Name);
+                            //Console.WriteLine("\t\tSegment count: {0}", sklData.nRigidBodies);
+
+                            //  Now, for each of the skeleton segments 
+                            for (int k = 0; k < sklData.nRigidBodies; k++)
                             {
-                                pxt = boneData.x;
-                                pyt = -boneData.z;
-                                pzt = boneData.y;
-                                qxt = boneData.qx;
-                                qyt = -boneData.qz;
-                                qzt = boneData.qy;
-                                qwt = boneData.qw;
-                            }
-                            else
-                            {
-                                pxt = boneData.x;
-                                pyt = boneData.y;
-                                pzt = boneData.z;
-                                qxt = boneData.qx;
-                                qyt = boneData.qy;
-                                qzt = boneData.qz;
-                                qwt = boneData.qw;
-                            }
 
-                            //  Decoding skeleton bone ID   
-                            int skeletonID = HighWord(boneData.ID);
-                            int rigidBodyID = LowWord(boneData.ID);
-                            int uniqueID = skeletonID * 1000 + rigidBodyID;
-                            int key = uniqueID.GetHashCode();
+                                NatNetML.RigidBodyData boneData = sklData.RigidBodies[k];
 
-                            NatNetML.RigidBody bone = (RigidBody)mHtSkelRBs[key];   //Fetching saved skeleton bone descriptions
-
-                            if (bone != null) // during a refetch the bone descriptions might be removed for a moment
-                            {
-                                if (mOscModeMax)
+                                float pxt, pyt, pzt, qxt, qyt, qzt, qwt = 0.0f;
+                                if (mUpAxis == 1)
                                 {
-                                    message = new OscMessage("/skeleton/bone", skl.Name, bone.ID, "position", pxt, pyt, pzt);
-                                    bundle.Add(message);
-                                    message = new OscMessage("/skeleton/bone", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
-                                    bundle.Add(message);
-                                    message = new OscMessage("/skeleton/joint", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
-                                    bundle.Add(message);
+                                    pxt = boneData.x;
+                                    pyt = -boneData.z;
+                                    pzt = boneData.y;
+                                    qxt = boneData.qx;
+                                    qyt = -boneData.qz;
+                                    qzt = boneData.qy;
+                                    qwt = boneData.qw;
                                 }
-                                if (mOscModeIsa)
+                                else
                                 {
-                                    message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/position", pxt, pyt, pzt);
-                                    bundle.Add(message);
-                                    message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
-                                    bundle.Add(message);
-                                    message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
-                                    bundle.Add(message);
+                                    pxt = boneData.x;
+                                    pyt = boneData.y;
+                                    pzt = boneData.z;
+                                    qxt = boneData.qx;
+                                    qyt = boneData.qy;
+                                    qzt = boneData.qz;
+                                    qwt = boneData.qw;
                                 }
-                                if (mOscModeTouch)
+
+                                if (mleftHanded)
                                 {
-                                    message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/transformation", pxt, pyt, pzt, qxt, qyt, qzt, qwt);
-                                    bundle.Add(message);
-                                    message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
-                                    bundle.Add(message);
+                                    pxt = -pxt;
+                                    qyt = -qyt;
+                                    qzt = -qzt;
+                                }
+
+                                //  Decoding skeleton bone ID   
+                                int skeletonID = HighWord(boneData.ID);
+                                int rigidBodyID = LowWord(boneData.ID);
+                                int uniqueID = skeletonID * 1000 + rigidBodyID;
+                                int key = uniqueID.GetHashCode();
+
+                                NatNetML.RigidBody bone = (RigidBody)mHtSkelRBs[key];   //Fetching saved skeleton bone descriptions
+
+                                if (bone != null) // during a refetch the bone descriptions might be removed for a moment
+                                {
+                                    if (mOscModeMax)
+                                    {
+                                        message = new OscMessage("/skeleton/bone", skl.Name, bone.ID, "position", pxt, pyt, pzt);
+                                        bundle.Add(message);
+                                        message = new OscMessage("/skeleton/bone", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
+                                        bundle.Add(message);
+                                        message = new OscMessage("/skeleton/joint", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
+                                        bundle.Add(message);
+                                    }
+                                    if (mOscModeIsa)
+                                    {
+                                        message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/position", pxt, pyt, pzt);
+                                        bundle.Add(message);
+                                        message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
+                                        bundle.Add(message);
+                                        message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
+                                        bundle.Add(message);
+                                    }
+                                    if (mOscModeTouch)
+                                    {
+                                        message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/transformation", pxt, pyt, pzt, qxt, qyt, qzt, qwt);
+                                        bundle.Add(message);
+                                        message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
+                                        bundle.Add(message);
+                                    }
                                 }
                             }
                         }
                     }
                 }
+
             }
-            
+
             /*  Parsing Force Plate Frame Data  */
             for (int i = 0; i < mForcePlates.Count; i++)
             {
