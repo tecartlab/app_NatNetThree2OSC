@@ -1,4 +1,4 @@
-NatNetThree2OSC 7.0
+NatNetThree2OSC 8.0
 ===================================
 
 
@@ -31,7 +31,7 @@ Usage: NatNetThree2OSC
 * **--motiveCmdPort**     (Default: 1510) Motives command port
 * **--oscSendPort**       Required. listening port of the machine OSC data is sent to.
 * **--oscCtrlPort**       (Default: 65111) listening port of this service to trigger Motive.
-* **--oscMode**           (Default: max) OSC format (max, isadora, touch)
+* **--oscMode**           (Default: max) OSC format (max, isadora, touch, sparck)
 * **--sendSkeletons**     (Default: false) send skeleton data
 * **--yup2zup**           (Default: false) transform y-up to z-up
 * **--leftHanded**        (Default: false) transform right handed to left handed coordinate system
@@ -47,9 +47,16 @@ Usage: NatNetThree2OSC
 
 when streaming, the following messages are sent at the beginning of each frame
 
+<timestamp> = <milliSecondsSinceMotiveStarted(float)>
+
 + /frame/start \<frameNumber>
-+ /frame/timestamp \<secondsSinceMotiveStarted(float)>
++ /frame/timestamp \<timestamp>
 + /frame/timecode \<smtp> \<subframe>
+
+if OSC MODE = sparck
+
++ /f/s \<frameNumber>
++ /f/t \<timestamp>
 
 upon streaming the following messages are sent depending on the OSC Mode
 
@@ -91,11 +98,24 @@ TouchDesigner: OSC MODE = touch
 + /skeleton/\<skleletonName>/bone/\<boneID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 + /skeleton/\<skleletonName>/joint/\<boneID>/quat \<x> \<y> \<z> \<w>
 
+(!) - will only be sent if the CLI flags are set.
+
+SPARCK: OSC MODE = sparck
+
++ /rb/tk \<0/1>
++ /rb \<rigidbodyID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
++ /rb/mk \<rigidbodyID> \<timestamp> \<x> \<y> \<z>
++ /skel /\<skleletonName> \<boneID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
+
 IF you want to have multiple modes, set the oscmode like "max,isadora" or "isadora,touch" and make sure no space is between the values
 
 At the end of the frame the frameend message is sent
 
 + /frame/end \<frameNumber>
+
+if OSC MODE = sparck
+
++ /f/e \<frameNumber>
 
 ### Remote control
 
@@ -103,28 +123,29 @@ sending commands to the <OscListeningPort> will pass commands to Motive:
 
 the following commands are implemented:
 
++ /script/oscModeSparck (0..1) will start/stop streaming max type messages
++ /script/oscModeMax (0..1) will start/stop streaming max type messages
++ /script/oscModeIsadora (0..1) will start/stop streaming isadora type messages
++ /script/oscModeTouch (0..1) will start/stop streaming touchdesigner type messages
++ /script/sendSkeletons (0..1) will start/stop streaming skeleton data
++ /script/verbose (0..1) will start/stop outputing verbose messages
++ /script/zUpAxis (0..1) 1 = will transform to zUp orientation
++ /script/leftHanded (0..1) 1 = will transform to left handed orientation
++ /script/bundled (0..1) will start/stop bundle the osc messages
++ /script/calcMatrix (0..1) 1 = will start/stop calculate the transformation matrix
++ /script/calcInvMatrix (0..1) 1 = will start/stop calculate the inverse transformation matrix
+
+--
+
 + /motive/command refetch
 
 will return all rigidbodies and skeletons currently streaming
 
-+ /oscModeMax (0..1) will start/stop streaming max type messages
-+ /oscModeIsadora (0..1) will start/stop streaming isadora type messages
-+ /oscModeTouch (0..1) will start/stop streaming touchdesigner type messages
-+ /sendSkeletons (0..1) will start/stop streaming skeleton data
-+ /verbose (0..1) will start/stop outputing verbose messages
-+ /zUpAxis (0..1) 1 = will transform to zUp orientation
-+ /leftHanded (0..1) 1 = will transform to left handed orientation
-+ /bundled (0..1) will start/stop bundle the osc messages
-+ /calcMatrix (0..1) 1 = will start/stop calculate the transformation matrix
-+ /calcInvMatrix (0..1) 1 = will start/stop calculate the inverse transformation matrix
-
-
-
-+ /rigidbody/id \<rigidbodyName> \<rigidbodyID>
-+ /skeleton/id \<skleletonName> \<SkeletonID>
-+ /skeleton/id/bone \<skleletonName> \<boneID> \<boneName>
-+ /forceplate/id \<serial>
-+ /forceplate/id/channel \<serial> \<channelID> \<channelName>
++ /motive/rigidbody/id \<rigidbodyName> \<rigidbodyID>
++ /motive/skeleton/id \<skleletonName> \<SkeletonID>
++ /motive/skeleton/id/bone \<skleletonName> \<boneID> \<boneName>
++ /motive/forceplate/id \<serial>
++ /motive/forceplate/id/channel \<serial> \<channelID> \<channelName>
 
 Building
 ---------

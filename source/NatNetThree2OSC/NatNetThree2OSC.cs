@@ -124,6 +124,7 @@ namespace NatNetThree2OSC
         private static bool mOscModeMax = true;
         private static bool mOscModeIsa = false;
         private static bool mOscModeTouch = false;
+        private static bool mOscModeSparck = false;
         private static int mUpAxis = 0;
         private static bool mleftHanded = false;
         private static bool mSendSkeletons = false;
@@ -180,6 +181,7 @@ namespace NatNetThree2OSC
             mOscModeMax = (opts.mOscMode.Contains("max")) ? true : false;
             mOscModeIsa = (opts.mOscMode.Contains("isadora")) ? true : false;
             mOscModeTouch = (opts.mOscMode.Contains("touch")) ? true : false;
+            mOscModeSparck = (opts.mOscMode.Contains("sparck")) ? true : false;
 
             mUpAxis = (opts.myUp2zUp) ? 1 : 0;
             mleftHanded = opts.myleftHanded;
@@ -190,15 +192,15 @@ namespace NatNetThree2OSC
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
 
-            Console.WriteLine("\n---- NatNetThree2OSC v. 6.0  ----");
-            Console.WriteLine("\n----   20201006 by maybites  ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 8.0  ----");
+            Console.WriteLine("\n----   20201203 by maybites  ----");
 
             Console.WriteLine("\nNatNetThree2OSC");
             Console.WriteLine("\t oscSendIP = \t\t({0:N3})", opts.mStrOscSendIP);
             Console.WriteLine("\t oscSendPort = \t\t({0})", opts.mIntOscSendPort);
             Console.WriteLine("\t oscCtrlPort = \t\t({0})", opts.mIntOscCtrlPort);
             Console.WriteLine("\t oscMode = \t\t[{0}]", string.Join(":", opts.mOscMode));
-            Console.WriteLine("\t sendSkeletons = \t\t[{0}]", opts.mySendSkeletons);
+            Console.WriteLine("\t sendSkeletons = \t[{0}]", opts.mySendSkeletons);
             Console.WriteLine("\t matrix = \t\t[{0}]", opts.mMatrix);
             Console.WriteLine("\t invMatrix = \t\t[{0}]", opts.mInvMatrix);
             Console.WriteLine("\t yup2zup = \t\t[{0}]", opts.myUp2zUp);
@@ -263,15 +265,23 @@ namespace NatNetThree2OSC
                         mAssetChanged = true;
                     }
                 }
-                else if (messageReceived != null && messageReceived.Address.Equals(value: "/oscModeMax"))
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/oscModeSparck"))
                 {
-                   if (messageReceived.Arguments.Count > 0)
+                    if (messageReceived.Arguments.Count > 0)
                     {
-                        mOscModeMax = ((int)messageReceived.Arguments[0] == 1)?true:false;
+                        mOscModeSparck = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /oscModeSparck " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/oscModeMax"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mOscModeMax = ((int)messageReceived.Arguments[0] == 1) ? true : false;
                         Console.WriteLine("received /oscModeMax " + messageReceived.Arguments[0]);
                     }
                 }
-                else if (messageReceived != null && messageReceived.Address.Equals(value: "/oscModeIsaodra"))
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/oscModeIsaodra"))
                 {
                     if (messageReceived.Arguments.Count > 0)
                     {
@@ -279,7 +289,7 @@ namespace NatNetThree2OSC
                         Console.WriteLine("received /oscModeIsaodra " + messageReceived.Arguments[0]);
                     }
                 }
-                else if (messageReceived != null && messageReceived.Address.Equals(value: "/oscModeTouch"))
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/oscModeTouch"))
                 {
                     if (messageReceived.Arguments.Count > 0)
                     {
@@ -287,7 +297,7 @@ namespace NatNetThree2OSC
                         Console.WriteLine("received /oscModeTouch " + messageReceived.Arguments[0]);
                     }
                 }
-                else if (messageReceived != null && messageReceived.Address.Equals(value: "/leftHanded"))
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/leftHanded"))
                 {
                     if (messageReceived.Arguments.Count > 0)
                     {
@@ -295,7 +305,7 @@ namespace NatNetThree2OSC
                         Console.WriteLine("received /leftHanded " + messageReceived.Arguments[0]);
                     }
                 }
-                else if (messageReceived != null && messageReceived.Address.Equals(value: "/zUpAxis"))
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/zUpAxis"))
                 {
                     if (messageReceived.Arguments.Count > 0)
                     {
@@ -303,7 +313,7 @@ namespace NatNetThree2OSC
                         Console.WriteLine("received /zUpAxis " + messageReceived.Arguments[0]);
                     }
                 }
-                else if (messageReceived != null && messageReceived.Address.Equals(value: "/sendSkeletons"))
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/sendSkeletons"))
                 {
                     if (messageReceived.Arguments.Count > 0)
                     {
@@ -311,7 +321,7 @@ namespace NatNetThree2OSC
                         Console.WriteLine("received /sendSkeletons " + messageReceived.Arguments[0]);
                     }
                 }
-                else if (messageReceived != null && messageReceived.Address.Equals(value: "/verbose"))
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/verbose"))
                 {
                     if (messageReceived.Arguments.Count > 0)
                     {
@@ -319,7 +329,7 @@ namespace NatNetThree2OSC
                         Console.WriteLine("received /verbose " + messageReceived.Arguments[0]);
                     }
                 }
-                else if (messageReceived != null && messageReceived.Address.Equals(value: "/bundled"))
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/bundled"))
                 {
                     if (messageReceived.Arguments.Count > 0)
                     {
@@ -327,7 +337,7 @@ namespace NatNetThree2OSC
                         Console.WriteLine("received /bundled " + messageReceived.Arguments[0]);
                     }
                 }
-                else if (messageReceived != null && messageReceived.Address.Equals(value: "/calcMatrix"))
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/calcMatrix"))
                 {
                     if (messageReceived.Arguments.Count > 0)
                     {
@@ -335,7 +345,7 @@ namespace NatNetThree2OSC
                         Console.WriteLine("received /calcMatrix " + messageReceived.Arguments[0]);
                     }
                 }
-                else if (messageReceived != null && messageReceived.Address.Equals(value: "/calcInvMatrix"))
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/calcInvMatrix"))
                 {
                     if (messageReceived.Arguments.Count > 0)
                     {
@@ -415,23 +425,36 @@ namespace NatNetThree2OSC
             /*  Exception handler for cases where assets are added or removed.
                 Data description is re-obtained in the main function so that contents
                 in the frame handler is kept minimal. */
-            if (( data.bTrackingModelsChanged == true || data.nRigidBodies != mRigidBodies.Count || data.nSkeletons != mSkeletons.Count || data.nForcePlates != mForcePlates.Count))
+            if ((data.bTrackingModelsChanged == true || data.nRigidBodies != mRigidBodies.Count || data.nSkeletons != mSkeletons.Count || data.nForcePlates != mForcePlates.Count))
             {
                 mAssetChanged = true;
             }
-            else if(data.iFrame % 1 == 0)
+            else if (data.iFrame % 1 == 0)
             {
                 /*  Processing and ouputting frame data every 200th frame.
                     This conditional statement is included in order to simplify the program output */
+                var message = new OscMessage("/f/s", data.iFrame);
 
-                var message = new OscMessage("/frame/start", data.iFrame); ;
-                bundle.Add(message);
+                if (mOscModeSparck)
+                {
+                    message = new OscMessage("/f/s", data.iFrame); ;
+                    bundle.Add(message);
 
-                message = new OscMessage("/frame/timestamp", (float) data.fTimestamp);
-                bundle.Add(message);
+                    message = new OscMessage("/f/t", (float)data.fTimestamp * 1000f);
+                    bundle.Add(message);
 
-                message = new OscMessage("/frame/timecode", (double) data.Timecode, (double) data.TimecodeSubframe);
-                bundle.Add(message);
+                }
+                if (mOscModeIsa || mOscModeTouch || mOscModeMax)
+                {
+                    message = new OscMessage("/frame/start", data.iFrame); ;
+                    bundle.Add(message);
+
+                    message = new OscMessage("/frame/timestamp", (float)data.fTimestamp * 1000f);
+                    bundle.Add(message);
+
+                    message = new OscMessage("/frame/timecode", (double)data.Timecode, (double)data.TimecodeSubframe);
+                    bundle.Add(message);
+                }
 
                 /*
                 message = new SharpOSC.OscMessage("/frame/timestamp/transmit", data.TransmitTimestamp.toString());
@@ -447,8 +470,16 @@ namespace NatNetThree2OSC
 
                 processFrameData(data, bundle);
 
-                message = new OscMessage("/frame/end", data.iFrame);
-                bundle.Add(message);
+                if (mOscModeSparck)
+                {
+                    message = new OscMessage("/f/e", data.iFrame);
+                    bundle.Add(message);
+                }
+                if (mOscModeIsa || mOscModeTouch || mOscModeMax)
+                {
+                    message = new OscMessage("/frame/end", data.iFrame);
+                    bundle.Add(message);
+                }
             }
 
             if (mBundled)
@@ -522,6 +553,8 @@ namespace NatNetThree2OSC
                     {
                         NatNetML.RigidBody rb = mRigidBodies[i];                // Saved rigid body descriptions
                         NatNetML.RigidBodyData rbData = data.RigidBodies[j];    // Received rigid body descriptions
+
+                        NatNetML.Marker[] mp = rb.MarkerPositions;
 
                         float pxt, pyt, pzt, qxt, qyt, qzt, qwt = 0.0f;
                         if (mUpAxis == 1)
@@ -603,6 +636,18 @@ namespace NatNetThree2OSC
                                 message = new OscMessage("/rigidbody/" + rb.ID + "/transformation", pxt, pyt, pzt, qxt, qyt, qzt, qwt);
                                 bundle.Add(message);
                             }
+                            if (mOscModeSparck)
+                            {
+                                message = new OscMessage("/rb/tk",  rb.ID, 1);
+                                bundle.Add(message);
+                                message = new OscMessage("/rb", rb.ID, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
+                                bundle.Add(message);
+                                for (int m = 0; m < rb.nMarkers; m++)
+                                {
+                                    message = new OscMessage("/rb/mk", rb.ID, (float)data.fTimestamp * 1000f, mp[m].x, mp[m].y, mp[m].z);
+                                    bundle.Add(message);
+                                }
+                            }
 
                             if (mOscModeIsa || mOscModeTouch)
                             {
@@ -645,6 +690,11 @@ namespace NatNetThree2OSC
                                 message = new OscMessage("/rigidbody/" + rb.ID + "/tracked", 0);
                                 bundle.Add(message);
                             }
+                            if (mOscModeSparck)
+                            {
+                                message = new OscMessage("/rb/tk", rb.ID, 0);
+                                bundle.Add(message);
+                            }
                             // HERE AN INFO MESSAGE can be sent that this rigidbody is occluded...(set red...)
 
                             //Console.WriteLine("\t{0} is not tracked in frame {1}", rb.Name, data.iFrame);
@@ -666,7 +716,6 @@ namespace NatNetThree2OSC
                         {
                             NatNetML.Skeleton skl = mSkeletons[i];              // Saved skeleton descriptions
                             NatNetML.SkeletonData sklData = data.Skeletons[j];  // Received skeleton frame data
-
 
                             //Console.WriteLine("\tSkeleton ({0}):", skl.Name);
                             //Console.WriteLine("\t\tSegment count: {0}", sklData.nRigidBodies);
@@ -741,12 +790,16 @@ namespace NatNetThree2OSC
                                         message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
                                         bundle.Add(message);
                                     }
+                                    if (mOscModeSparck)
+                                    {
+                                        message = new OscMessage("/skel", skl.Name, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
+                                        bundle.Add(message);
+                                    }
                                 }
                             }
                         }
                     }
                 }
-
             }
 
             /*  Parsing Force Plate Frame Data  */
@@ -857,7 +910,7 @@ namespace NatNetThree2OSC
                     case ((int) NatNetML.DataDescriptorType.eMarkerSetData):
                         NatNetML.MarkerSet mkset = (NatNetML.MarkerSet)description[i];
                         Console.WriteLine("\tMarkerSet ({0})", mkset.Name);
-                        var message = new OscMessage("/markerset/id", mkset.Name);
+                        var message = new OscMessage("/motive/markerset/id", mkset.Name);
                         OSCsender.Send(message);
 
                         break;
@@ -866,7 +919,7 @@ namespace NatNetThree2OSC
                         NatNetML.RigidBody rb = (NatNetML.RigidBody)description[i];
                         Console.WriteLine("\tRigidBody ({0})", rb.Name);
 
-                        message = new OscMessage("/rigidbody/id", rb.Name, rb.ID);
+                        message = new OscMessage("/motive/rigidbody/id", rb.Name, rb.ID);
                         OSCsender.Send(message);
 
                         // Saving Rigid Body Descriptions
@@ -878,7 +931,7 @@ namespace NatNetThree2OSC
                         NatNetML.Skeleton skl = (NatNetML.Skeleton)description[i];
                         Console.WriteLine("\tSkeleton ({0}), Bones:", skl.Name);
 
-                        message = new OscMessage("/skeleton/id", skl.Name, skl.ID);
+                        message = new OscMessage("/motive/skeleton/id", skl.Name, skl.ID);
                         OSCsender.Send(message);
 
                         //Saving Skeleton Descriptions
@@ -887,7 +940,7 @@ namespace NatNetThree2OSC
                         // Saving Individual Bone Descriptions
                         for (int j = 0; j < skl.nRigidBodies; j++)
                         {
-                            message = new OscMessage("/skeleton/id/bone", skl.Name, skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
+                            message = new OscMessage("/motive/skeleton/id/bone", skl.Name, skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
                             OSCsender.Send(message);
 
                             Console.WriteLine("\t\t{0}. {1}", skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
@@ -902,7 +955,7 @@ namespace NatNetThree2OSC
                         NatNetML.ForcePlate fp = (NatNetML.ForcePlate)description[i];
                         Console.WriteLine("\tForcePlate ({0})", fp.Serial);
 
-                        message = new OscMessage("/forceplate/id", fp.Serial);
+                        message = new OscMessage("/motive/forceplate/id", fp.Serial);
                         OSCsender.Send(message);
 
                         // Saving Force Plate Channel Names
@@ -910,7 +963,7 @@ namespace NatNetThree2OSC
                
                         for (int j = 0; j < fp.ChannelCount; j++)
                         {
-                            message = new OscMessage("/forceplate/id/channel", fp.Serial, j + 1, fp.ChannelNames[j]);
+                            message = new OscMessage("/motive/forceplate/id/channel", fp.Serial, j + 1, fp.ChannelNames[j]);
                             OSCsender.Send(message);
 
                             Console.WriteLine("\t\tChannel {0}: {1}", j + 1, fp.ChannelNames[j]);
