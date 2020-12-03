@@ -47,7 +47,7 @@ Usage: NatNetThree2OSC
 
 when streaming, the following messages are sent at the beginning of each frame
 
-<timestamp> = <milliSecondsSinceMotiveStarted(float)>
+\<timestamp> = <milliSecondsSinceMotiveStarted(float)>
 
 + /frame/start \<frameNumber>
 + /frame/timestamp \<timestamp>
@@ -60,19 +60,19 @@ if OSC MODE = sparck
 
 upon streaming the following messages are sent depending on the OSC Mode
 
+(!) - will only be sent if the CLI flags are set.
+
 MAX/MSP: OSC MODE = max
 
 + /marker \<markerID> position \<x> \<y> \<z>
 + /rigidbody \<rigidbodyID> tracked \<0/1>
 + /rigidbody \<rigidbodyID> position \<x> \<y> \<z>
 + /rigidbody \<rigidbodyID> quat \<qx> \<qy> \<qz> \<qw>
-+ /rigidbody \<rigidbodyID> matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
-+ /rigidbody \<rigidbodyID> invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
-+ /skeleton/bone \<skleletonName> \<boneID> position \<x> \<y> \<z>
-+ /skeleton/bone \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
-+ /skeleton/joint \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
-
-(!) - will only be sent if the CLI flags are set.
++ (!) /rigidbody \<rigidbodyID> matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!) /rigidbody \<rigidbodyID> invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!) /skeleton/bone \<skleletonName> \<boneID> position \<x> \<y> \<z>
++ (!) /skeleton/bone \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
++ (!) /skeleton/joint \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
 
 ISADORA: OSC MODE = isadora
 
@@ -80,23 +80,21 @@ ISADORA: OSC MODE = isadora
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/quat \<qx> \<qy> \<qz> \<qw>
-+ /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
-+ /rigidbody/\<rigidbodyID>/invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
-+ /skeleton/\<skleletonName>/bone/\<boneID>/position \<x> \<y> \<z>
-+ /skeleton/\<skleletonName>/bone/\<boneID>/quat \<qx> \<qy> \<qz> \q<w>
-+ /skeleton/\<skleletonName>/joint/\<boneID>/quat \<qx> \<qy> \<qz> \<qw>
-
-(!) - will only be sent if the CLI flags are set.
++ (!) /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!) /rigidbody/\<rigidbodyID>/invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!) /skeleton/\<skleletonName>/bone/\<boneID>/position \<x> \<y> \<z>
++ (!) /skeleton/\<skleletonName>/bone/\<boneID>/quat \<qx> \<qy> \<qz> \q<w>
++ (!) /skeleton/\<skleletonName>/joint/\<boneID>/quat \<qx> \<qy> \<qz> \<qw>
 
 TouchDesigner: OSC MODE = touch
 
 + /marker/\<markerID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
-+ /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
-+ /rigidbody/\<rigidbodyID>/invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44> (!)
-+ /skeleton/\<skleletonName>/bone/\<boneID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
-+ /skeleton/\<skleletonName>/joint/\<boneID>/quat \<x> \<y> \<z> \<w>
++ (!) /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!) /rigidbody/\<rigidbodyID>/invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!) /skeleton/\<skleletonName>/bone/\<boneID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
++ (!) /skeleton/\<skleletonName>/joint/\<boneID>/quat \<x> \<y> \<z> \<w>
 
 (!) - will only be sent if the CLI flags are set.
 
@@ -105,7 +103,7 @@ SPARCK: OSC MODE = sparck
 + /rb/tk \<0/1>
 + /rb \<rigidbodyID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 + /rb/mk \<rigidbodyID> \<timestamp> \<x> \<y> \<z>
-+ /skel /\<skleletonName> \<boneID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
++ (!) /skel /\<skleletonName> \<boneID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 
 IF you want to have multiple modes, set the oscmode like "max,isadora" or "isadora,touch" and make sure no space is between the values
 
@@ -119,7 +117,7 @@ if OSC MODE = sparck
 
 ### Remote control
 
-sending commands to the <OscListeningPort> will pass commands to Motive:
+sending commands to the \<OscListeningPort> will pass commands to Motive:
 
 the following commands are implemented:
 
