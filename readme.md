@@ -47,7 +47,7 @@ Usage: NatNetThree2OSC
 
 when streaming, the following messages are sent at the beginning of each frame
 
-\<timestamp> = <milliSecondsSinceMotiveStarted(float)>
+\<timestamp> = \<milliSecondsSinceMotiveStarted(float)>
 
 + /frame/start \<frameNumber>
 + /frame/timestamp \<timestamp>
@@ -103,7 +103,7 @@ SPARCK: OSC MODE = sparck
 + /rb/tk \<0/1>
 + /rb \<rigidbodyID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 + /rb/mk \<rigidbodyID> \<timestamp> \<x> \<y> \<z>
-+ (!) /skel /\<skleletonName> \<boneID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
++ (!) /skel \<skleletonName> \<boneID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 
 IF you want to have multiple modes, set the oscmode like "max,isadora" or "isadora,touch" and make sure no space is between the values
 
