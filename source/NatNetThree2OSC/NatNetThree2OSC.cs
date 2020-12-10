@@ -645,7 +645,27 @@ namespace NatNetThree2OSC
                                 bundle.Add(message);
                                 for (int m = 0; m < rb.nMarkers; m++)
                                 {
-                                    message = new OscMessage("/rb", rb.ID, 1, m, mp[m].x, mp[m].y, mp[m].z);
+                                    float mpxt, mpyt, mpzt = 0.0f;
+
+                                    if (mUpAxis == 1)
+                                    {
+                                        mpxt = mp[m].x;
+                                        mpyt = -mp[m].z;
+                                        mpzt = mp[m].y;
+                                    }
+                                    else
+                                    {
+                                        mpxt = mp[m].x;
+                                        mpyt = mp[m].y;
+                                        mpzt = mp[m].z;
+                                    }
+
+                                    if (mleftHanded)
+                                    {
+                                        mpxt = -mpxt;
+                                    }
+
+                                    message = new OscMessage("/rb", rb.ID, 1, m, mpxt, mpyt, mpzt);
                                     bundle.Add(message);
                                 }
                                 message = new OscMessage("/rb", rb.ID, 2, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
