@@ -100,10 +100,19 @@ TouchDesigner: OSC MODE = touch
 
 SPARCK: OSC MODE = sparck
 
-+ /rb/tk \<0/1>
-+ /rb \<rigidbodyID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
-+ /rb/mk \<rigidbodyID> \<timestamp> \<x> \<y> \<z>
-+ (!) /skel \<skleletonName> \<boneID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
+the addresses for sparck mode are structured in a way to process them quickly in sparck and are therefore not
+very human readable.
+
+<datatype> specifies what kind of data follows
+0 = tracked
+1 = maker
+2 = rigidbody
+10 = skeleton
+
++ /rb \<rigidbodyID> <datatype = 0> \<0/1>
++ /rb \<rigidbodyID> <datatype = 1> \<markerID> \<x> \<y> \<z>
++ /rb \<rigidbodyID> <datatype = 2> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
++ (!) /skel \<skleletonID> <datatype = 10> \<boneID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 
 IF you want to have multiple modes, set the oscmode like "max,isadora" or "isadora,touch" and make sure no space is between the values
 
@@ -139,11 +148,13 @@ the following commands are implemented:
 
 will return all rigidbodies and skeletons currently streaming
 
+* /motive/update/start
 + /motive/rigidbody/id \<rigidbodyName> \<rigidbodyID>
 + /motive/skeleton/id \<skleletonName> \<SkeletonID>
 + /motive/skeleton/id/bone \<skleletonName> \<boneID> \<boneName>
 + /motive/forceplate/id \<serial>
 + /motive/forceplate/id/channel \<serial> \<channelID> \<channelName>
++ /motive/update/end
 
 Building
 ---------

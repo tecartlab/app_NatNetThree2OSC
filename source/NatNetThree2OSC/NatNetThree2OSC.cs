@@ -638,15 +638,18 @@ namespace NatNetThree2OSC
                             }
                             if (mOscModeSparck)
                             {
-                                message = new OscMessage("/rb/tk",  rb.ID, 1);
-                                bundle.Add(message);
-                                message = new OscMessage("/rb", rb.ID, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
+                                // tracked   -> /rb <rigidbodyID> <datatype = 0> 1/0
+                                // marker    -> /rb <rigidbodyID> <datatype = 1> <timestamp> <px> <py> <pz>
+                                // rigidbody -> /rb <rigidbodyID> <datatype = 2> <timestamp> <px> <py> <pz> <qx> <qy> <qz> <qw>
+                                message = new OscMessage("/rb",  rb.ID, 0, 1);
                                 bundle.Add(message);
                                 for (int m = 0; m < rb.nMarkers; m++)
                                 {
-                                    message = new OscMessage("/rb/mk", rb.ID, (float)data.fTimestamp * 1000f, mp[m].x, mp[m].y, mp[m].z);
+                                    message = new OscMessage("/rb/mk", rb.ID, 1, m, mp[m].x, mp[m].y, mp[m].z);
                                     bundle.Add(message);
                                 }
+                                message = new OscMessage("/rb", rb.ID, 2, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
+                                bundle.Add(message);
                             }
 
                             if (mOscModeIsa || mOscModeTouch)
@@ -692,7 +695,7 @@ namespace NatNetThree2OSC
                             }
                             if (mOscModeSparck)
                             {
-                                message = new OscMessage("/rb/tk", rb.ID, 0);
+                                message = new OscMessage("/rb", rb.ID, 0, 0);
                                 bundle.Add(message);
                             }
                             // HERE AN INFO MESSAGE can be sent that this rigidbody is occluded...(set red...)
@@ -792,7 +795,8 @@ namespace NatNetThree2OSC
                                     }
                                     if (mOscModeSparck)
                                     {
-                                        message = new OscMessage("/skel", skl.Name, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
+                                        // skeleton -> /skel <skeltonID> <datatype = 10> <boneID> <timestamp> <px> <py> <pz> <qx> <qy> <qz> <qw>
+                                        message = new OscMessage("/skel", skl.ID, 10, bone.ID, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
                                         bundle.Add(message);
                                     }
                                 }
@@ -900,7 +904,10 @@ namespace NatNetThree2OSC
             //  This sample will list only names of the data sets, but you can access 
             int numDataSet = description.Count;
             Console.WriteLine("Total {0} data sets in the capture:", numDataSet);
-            
+
+            var message = new OscMessage("/motive/update/start", 1);
+            OSCsender.Send(message);
+
             for (int i = 0; i < numDataSet; ++i)
             {
                 int dataSetType = description[i].type;
@@ -910,7 +917,7 @@ namespace NatNetThree2OSC
                     case ((int) NatNetML.DataDescriptorType.eMarkerSetData):
                         NatNetML.MarkerSet mkset = (NatNetML.MarkerSet)description[i];
                         Console.WriteLine("\tMarkerSet ({0})", mkset.Name);
-                        var message = new OscMessage("/motive/markerset/id", mkset.Name);
+                        message = new OscMessage("/motive/markerset/id", mkset.Name);
                         OSCsender.Send(message);
 
                         break;
@@ -979,6 +986,9 @@ namespace NatNetThree2OSC
                         break;
                 }
             }
+            message = new OscMessage("/motive/update/end", 1);
+            OSCsender.Send(message);
+
         }
 
         static double RadiansToDegrees(double dRads)
