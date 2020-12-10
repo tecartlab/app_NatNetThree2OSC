@@ -192,7 +192,7 @@ namespace NatNetThree2OSC
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
 
-            Console.WriteLine("\n---- NatNetThree2OSC v. 8.0  ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 8.1  ----");
             Console.WriteLine("\n----   20201203 by maybites  ----");
 
             Console.WriteLine("\nNatNetThree2OSC");
@@ -645,7 +645,7 @@ namespace NatNetThree2OSC
                                 bundle.Add(message);
                                 for (int m = 0; m < rb.nMarkers; m++)
                                 {
-                                    message = new OscMessage("/rb/mk", rb.ID, 1, m, mp[m].x, mp[m].y, mp[m].z);
+                                    message = new OscMessage("/rb", rb.ID, 1, m, mp[m].x, mp[m].y, mp[m].z);
                                     bundle.Add(message);
                                 }
                                 message = new OscMessage("/rb", rb.ID, 2, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
