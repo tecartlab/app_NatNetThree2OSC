@@ -33,6 +33,7 @@ Usage: NatNetThree2OSC
 * **--oscCtrlPort**       (Default: 65111) listening port of this service to trigger Motive.
 * **--oscMode**           (Default: max) OSC format (max, isadora, touch, sparck)
 * **--sendSkeletons**     (Default: false) send skeleton data
+* **--sendMarkerInfo**    (Default: false) send marker position data
 * **--yup2zup**           (Default: false) transform y-up to z-up
 * **--leftHanded**        (Default: false) transform right handed to left handed coordinate system
 * **--matrix**            (Default: false) calculate and send the transformation matrix
@@ -64,7 +65,7 @@ upon streaming the following messages are sent depending on the OSC Mode
 
 MAX/MSP: OSC MODE = max
 
-+ /marker \<markerID> position \<x> \<y> \<z>
++ (!) /marker \<markerID> position \<x> \<y> \<z>
 + /rigidbody \<rigidbodyID> tracked \<0/1>
 + /rigidbody \<rigidbodyID> position \<x> \<y> \<z>
 + /rigidbody \<rigidbodyID> quat \<qx> \<qy> \<qz> \<qw>
@@ -76,7 +77,7 @@ MAX/MSP: OSC MODE = max
 
 ISADORA: OSC MODE = isadora
 
-+ /marker/\<markerID>/position \<x> \<y> \<z>
++ (!) /marker/\<markerID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/quat \<qx> \<qy> \<qz> \<qw>
@@ -88,7 +89,7 @@ ISADORA: OSC MODE = isadora
 
 TouchDesigner: OSC MODE = touch
 
-+ /marker/\<markerID>/position \<x> \<y> \<z>
++ (!) /marker/\<markerID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 + (!) /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
@@ -110,7 +111,7 @@ very human readable.
 10 = skeleton
 
 + /rb \<rigidbodyID> <datatype = 0> \<0/1>
-+ /rb \<rigidbodyID> <datatype = 1> \<markerID> \<x> \<y> \<z>
++ (!) /rb \<rigidbodyID> <datatype = 1> \<markerID> \<x> \<y> \<z>
 + /rb \<rigidbodyID> <datatype = 2> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 + (!) /skel \<skleletonID> <datatype = 10> \<boneID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 

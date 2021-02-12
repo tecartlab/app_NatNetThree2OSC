@@ -86,6 +86,9 @@ namespace NatNetThree2OSC
         [Option("sendSkeletons", Required = false, Default = false, HelpText = "send skeleton data")]
         public bool mySendSkeletons { get; set; }
 
+        [Option("sendMarkerInfo", Required = false, Default = false, HelpText = "send skeleton data")]
+        public bool mySendMarkerInfo { get; set; }
+
         [Option("yup2zup", Required = false, Default = false, HelpText = "transform y-up to z-up")]
         public bool myUp2zUp { get; set; }
 
@@ -128,6 +131,7 @@ namespace NatNetThree2OSC
         private static int mUpAxis = 0;
         private static bool mleftHanded = false;
         private static bool mSendSkeletons = false;
+        private static bool mSendMarkerInfo = false;
         private static bool mVerbose = false;
         private static bool mBundled = false;
 
@@ -186,6 +190,7 @@ namespace NatNetThree2OSC
             mUpAxis = (opts.myUp2zUp) ? 1 : 0;
             mleftHanded = opts.myleftHanded;
             mSendSkeletons = opts.mySendSkeletons;
+            mSendMarkerInfo = opts.mySendMarkerInfo;
             mVerbose = opts.mVerbose;
             mBundled = opts.mBundled;
 
@@ -201,6 +206,7 @@ namespace NatNetThree2OSC
             Console.WriteLine("\t oscCtrlPort = \t\t({0})", opts.mIntOscCtrlPort);
             Console.WriteLine("\t oscMode = \t\t[{0}]", string.Join(":", opts.mOscMode));
             Console.WriteLine("\t sendSkeletons = \t[{0}]", opts.mySendSkeletons);
+            Console.WriteLine("\t sendMarkerInfo = \t[{0}]", opts.mySendMarkerInfo);
             Console.WriteLine("\t matrix = \t\t[{0}]", opts.mMatrix);
             Console.WriteLine("\t invMatrix = \t\t[{0}]", opts.mInvMatrix);
             Console.WriteLine("\t yup2zup = \t\t[{0}]", opts.myUp2zUp);
@@ -319,6 +325,14 @@ namespace NatNetThree2OSC
                     {
                         mSendSkeletons = ((int)messageReceived.Arguments[0] == 1) ? true : false;
                         Console.WriteLine("received /sendSkeletons " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/sendMarkerInfo"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mSendMarkerInfo = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /sendMarkerInfo " + messageReceived.Arguments[0]);
                     }
                 }
                 else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/verbose"))
@@ -502,38 +516,41 @@ namespace NatNetThree2OSC
             var message = new OscMessage("/marker");
             /*  Parsing marker Frame Data   */
 
-            for (int j = 0; j < data.nMarkers; j++)
+            if (mSendMarkerInfo == true)
             {
-                NatNetML.Marker rbData = data.LabeledMarkers[j];    // Received marker descriptions
-                
-                float pxt, pyt, pzt = 0.0f;
-                if (mUpAxis == 1)
+                for (int j = 0; j < data.nMarkers; j++)
                 {
-                    pxt = rbData.x;
-                    pyt = -rbData.z;
-                    pzt = rbData.y;
-                }
-                else
-                {
-                    pxt = rbData.x;
-                    pyt = rbData.y;
-                    pzt = rbData.z;
-                }
+                    NatNetML.Marker rbData = data.LabeledMarkers[j];    // Received marker descriptions
 
-                if (mleftHanded)
-                {
-                    pxt = -pxt;
-                }
+                    float pxt, pyt, pzt = 0.0f;
+                    if (mUpAxis == 1)
+                    {
+                        pxt = rbData.x;
+                        pyt = -rbData.z;
+                        pzt = rbData.y;
+                    }
+                    else
+                    {
+                        pxt = rbData.x;
+                        pyt = rbData.y;
+                        pzt = rbData.z;
+                    }
 
-                if (mOscModeMax)
-                {
-                    message = new OscMessage("/marker", rbData.ID, "position", pxt, pyt, pzt);
-                    bundle.Add(message);
-                }
-                if (mOscModeIsa || mOscModeTouch)
-                {
-                    message = new OscMessage("/marker" + rbData.ID + "/position", pxt, pyt, pzt);
-                    bundle.Add(message);
+                    if (mleftHanded)
+                    {
+                        pxt = -pxt;
+                    }
+
+                    if (mOscModeMax)
+                    {
+                        message = new OscMessage("/marker", rbData.ID, "position", pxt, pyt, pzt);
+                        bundle.Add(message);
+                    }
+                    if (mOscModeIsa || mOscModeTouch)
+                    {
+                        message = new OscMessage("/marker" + rbData.ID + "/position", pxt, pyt, pzt);
+                        bundle.Add(message);
+                    }
                 }
             }
 
@@ -643,30 +660,33 @@ namespace NatNetThree2OSC
                                 // rigidbody -> /rb <rigidbodyID> <datatype = 2> <timestamp> <px> <py> <pz> <qx> <qy> <qz> <qw>
                                 message = new OscMessage("/rb",  rb.ID, 0, 1);
                                 bundle.Add(message);
-                                for (int m = 0; m < rb.nMarkers; m++)
+                                if (mSendMarkerInfo == true)
                                 {
-                                    float mpxt, mpyt, mpzt = 0.0f;
-
-                                    if (mUpAxis == 1)
+                                    for (int m = 0; m < rb.nMarkers; m++)
                                     {
-                                        mpxt = mp[m].x;
-                                        mpyt = -mp[m].z;
-                                        mpzt = mp[m].y;
-                                    }
-                                    else
-                                    {
-                                        mpxt = mp[m].x;
-                                        mpyt = mp[m].y;
-                                        mpzt = mp[m].z;
-                                    }
+                                        float mpxt, mpyt, mpzt = 0.0f;
 
-                                    if (mleftHanded)
-                                    {
-                                        mpxt = -mpxt;
-                                    }
+                                        if (mUpAxis == 1)
+                                        {
+                                            mpxt = mp[m].x;
+                                            mpyt = -mp[m].z;
+                                            mpzt = mp[m].y;
+                                        }
+                                        else
+                                        {
+                                            mpxt = mp[m].x;
+                                            mpyt = mp[m].y;
+                                            mpzt = mp[m].z;
+                                        }
 
-                                    message = new OscMessage("/rb", rb.ID, 1, m, mpxt, mpyt, mpzt);
-                                    bundle.Add(message);
+                                        if (mleftHanded)
+                                        {
+                                            mpxt = -mpxt;
+                                        }
+
+                                        message = new OscMessage("/rb", rb.ID, 1, m, mpxt, mpyt, mpzt);
+                                        bundle.Add(message);
+                                    }
                                 }
                                 message = new OscMessage("/rb", rb.ID, 2, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
                                 bundle.Add(message);
