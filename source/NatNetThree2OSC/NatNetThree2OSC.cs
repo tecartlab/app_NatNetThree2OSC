@@ -396,6 +396,7 @@ namespace NatNetThree2OSC
 
                     /* [NatNet] Re-fetch the updated list of descriptors  */
                     fetchDataDescriptor();
+                    fetchOptions();
                     Console.WriteLine("===============================================================================\n");
                     mAssetChanged = false;
                 }
@@ -414,7 +415,7 @@ namespace NatNetThree2OSC
             OSCsender.Close();
         }
 
-         /// <summary>
+        /// <summary>
         /// [NatNet] parseFrameData will be called when a frame of Mocap
         /// data has is received from the server application.
         ///
@@ -943,6 +944,35 @@ namespace NatNetThree2OSC
                 Console.WriteLine("Error: Could not get the Data Descriptions");
             }
             Console.WriteLine("\n");
+        }
+
+        /**
+         * Gets the current CLI options
+         */
+        static void fetchOptions()
+        {
+            var message = new OscMessage("/script/oscModeSparck", mOscModeSparck);
+            OSCsender.Send(message);
+            message = new OscMessage("/script/oscModeMax", mOscModeMax);
+            OSCsender.Send(message);
+            message = new OscMessage("/script/oscModeIsaodra", mOscModeIsa);
+            OSCsender.Send(message);
+            message = new OscMessage("/script/oscModeTouch", mOscModeTouch);
+            OSCsender.Send(message);
+            message = new OscMessage("/script/leftHanded", mleftHanded);
+            OSCsender.Send(message);
+            message = new OscMessage("/script/zUpAxis", mUpAxis);
+            OSCsender.Send(message);
+            message = new OscMessage("/script/sendSkeletons", mSendSkeletons);
+            OSCsender.Send(message);
+            message = new OscMessage("/script/sendMarkerInfo", mSendMarkerInfo);
+            OSCsender.Send(message);
+            message = new OscMessage("/script/bundled", mBundled);
+            OSCsender.Send(message);
+            message = new OscMessage("/script/calcMatrix", mMatrix);
+            OSCsender.Send(message);
+            message = new OscMessage("/script/calcInvMatrix", mInvMatrix);
+            OSCsender.Send(message);
         }
 
         static void parseDataDescriptor(List<NatNetML.DataDescriptor> description)

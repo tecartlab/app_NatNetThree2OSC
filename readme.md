@@ -151,7 +151,7 @@ the following commands are implemented:
 
 + /motive/command refetch
 
-will return all rigidbodies and skeletons currently streaming
+will return all command options and all rigidbodies and skeletons currently streaming
 
 * /motive/update/start
 + /motive/rigidbody/id \<rigidbodyName> \<rigidbodyID>
