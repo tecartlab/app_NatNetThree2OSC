@@ -128,6 +128,7 @@ namespace NatNetThree2OSC
         private static bool mOscModeIsa = false;
         private static bool mOscModeTouch = false;
         private static bool mOscModeSparck = false;
+        private static bool mOscModeAmbi = false;
         private static int mUpAxis = 0;
         private static bool mleftHanded = false;
         private static bool mSendSkeletons = false;
@@ -186,6 +187,7 @@ namespace NatNetThree2OSC
             mOscModeIsa = (opts.mOscMode.Contains("isadora")) ? true : false;
             mOscModeTouch = (opts.mOscMode.Contains("touch")) ? true : false;
             mOscModeSparck = (opts.mOscMode.Contains("sparck")) ? true : false;
+            mOscModeAmbi = (opts.mOscMode.Contains("ambi")) ? true : false;
 
             mUpAxis = (opts.myUp2zUp) ? 1 : 0;
             mleftHanded = opts.myleftHanded;
@@ -618,6 +620,11 @@ namespace NatNetThree2OSC
 
                         if (rbData.Tracked == true)
                         {
+                            if (mOscModeAmbi)
+                            {
+                                message = new OscMessage("/icst/ambi/sourceindex/xyz", rb.ID, pxt, pyt, pzt);
+                                bundle.Add(message);
+                            }
                             if (mOscModeMax)
                             {
                                 message = new OscMessage("/rigidbody", rb.ID, "tracked", 1);

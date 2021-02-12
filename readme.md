@@ -33,7 +33,7 @@ Usage: NatNetThree2OSC
 * **--oscCtrlPort**       (Default: 65111) listening port of this service to trigger Motive.
 * **--oscMode**           (Default: max) OSC format (max, isadora, touch, sparck)
 * **--sendSkeletons**     (Default: false) send skeleton data
-* **--sendMarkerInfo**    (Default: false) send marker position data
+* **--sendMarkerInfo**    (Default: false) send marker info (position data)
 * **--yup2zup**           (Default: false) transform y-up to z-up
 * **--leftHanded**        (Default: false) transform right handed to left handed coordinate system
 * **--matrix**            (Default: false) calculate and send the transformation matrix
@@ -59,11 +59,11 @@ if OSC MODE = sparck
 + /f/s \<frameNumber>
 + /f/t \<timestamp>
 
-upon streaming the following messages are sent depending on the OSC Mode
+upon streaming, the following messages are sent depending on the OSC Mode
 
-(!) - will only be sent if the CLI flags are set.
+**(!) - will only be sent if the CLI flags are set.**
 
-MAX/MSP: OSC MODE = max
+#### MAX/MSP: OSC MODE = max
 
 + (!) /marker \<markerID> position \<x> \<y> \<z>
 + /rigidbody \<rigidbodyID> tracked \<0/1>
@@ -75,7 +75,7 @@ MAX/MSP: OSC MODE = max
 + (!) /skeleton/bone \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
 + (!) /skeleton/joint \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
 
-ISADORA: OSC MODE = isadora
+#### ISADORA: OSC MODE = isadora
 
 + (!) /marker/\<markerID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
@@ -87,7 +87,7 @@ ISADORA: OSC MODE = isadora
 + (!) /skeleton/\<skleletonName>/bone/\<boneID>/quat \<qx> \<qy> \<qz> \q<w>
 + (!) /skeleton/\<skleletonName>/joint/\<boneID>/quat \<qx> \<qy> \<qz> \<qw>
 
-TouchDesigner: OSC MODE = touch
+#### TouchDesigner: OSC MODE = touch
 
 + (!) /marker/\<markerID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
@@ -97,12 +97,13 @@ TouchDesigner: OSC MODE = touch
 + (!) /skeleton/\<skleletonName>/bone/\<boneID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 + (!) /skeleton/\<skleletonName>/joint/\<boneID>/quat \<x> \<y> \<z> \<w>
 
-(!) - will only be sent if the CLI flags are set.
+#### Ambisonics: OSC MODE = ambi
 
-SPARCK: OSC MODE = sparck
++ /icst/ambi/sourceindex/xyz \<rigidbodyID> \<x> \<y> \<z>
 
-the addresses for sparck mode are structured in a way to process them quickly in sparck and are therefore not
-very human readable.
+#### SPARCK: OSC MODE = sparck
+
+the addresses for sparck mode are structured in a way to process them quickly in sparck and are therefore not very human readable.
 
 <datatype> specifies what kind of data follows
 0 = tracked
@@ -114,6 +115,8 @@ very human readable.
 + (!) /rb \<rigidbodyID> <datatype = 1> \<markerID> \<x> \<y> \<z>
 + /rb \<rigidbodyID> <datatype = 2> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 + (!) /skel \<skleletonID> <datatype = 10> \<boneID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
+
+**(!) - will only be sent if the CLI flags are set.**
 
 IF you want to have multiple modes, set the oscmode like "max,isadora" or "isadora,touch" and make sure no space is between the values
 
@@ -136,6 +139,7 @@ the following commands are implemented:
 + /script/oscModeIsadora (0..1) will start/stop streaming isadora type messages
 + /script/oscModeTouch (0..1) will start/stop streaming touchdesigner type messages
 + /script/sendSkeletons (0..1) will start/stop streaming skeleton data
++ /script/sendMarkerInfo (0..1) will start/stop streaming marker data
 + /script/verbose (0..1) will start/stop outputing verbose messages
 + /script/zUpAxis (0..1) 1 = will transform to zUp orientation
 + /script/leftHanded (0..1) 1 = will transform to left handed orientation
