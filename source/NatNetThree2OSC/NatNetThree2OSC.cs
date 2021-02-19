@@ -376,10 +376,10 @@ namespace NatNetThree2OSC
             var listener = new SharpOSC.UDPListener(opts.mIntOscCtrlPort, callback);
 
 
-            while (!(Console.KeyAvailable && Console.ReadKey().Key == ConsoleKey.Escape))
+            while (true)
             {
                 // Continuously listening for Frame data
-                // Enter ESC to exit
+                // Enter ctrl-c to exit
 
                 // Exception handler for updated assets list.
                 if (mAssetChanged == true)
