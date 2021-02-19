@@ -43,6 +43,7 @@ Usage: NatNetThree2OSC
 * **--help**              Display this help screen.
 * **--version**           Display version information.
 
+For all the boolean flags, if you want to set them true you need simply add its name: --flagName. If you want to keep it false, don't add it to the command line.
 
 ### Streaming
 
