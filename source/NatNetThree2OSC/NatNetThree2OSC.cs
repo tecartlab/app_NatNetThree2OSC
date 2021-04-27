@@ -19,6 +19,7 @@ using System.Net;
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Threading;
 
 using NatNetML;
 
@@ -62,7 +63,7 @@ namespace NatNetThree2OSC
         [Option("motiveIP", Required = true, HelpText = "IP address of the machine Motive is running on.")]
         public string mStrServerIP { get; set; }
 
-        [Option("oscSendIP", Required = true, HelpText = "IP address of the machine OSC data is sent to.")]
+        [Option("oscSendIP", Required = true, HelpText = "IP address or URL of the machine OSC data is sent to.")]
         public string mStrOscSendIP { get; set; }
 
         [Option("multiCastIP", Required = false, Default = "239.255.42.99", HelpText = "Multicast IP Motive is sending on.")]
@@ -91,6 +92,9 @@ namespace NatNetThree2OSC
 
         [Option("yup2zup", Required = false, Default = false, HelpText = "transform y-up to z-up")]
         public bool myUp2zUp { get; set; }
+
+        [Option("dataStreamInfo", Required = false, Default = 0, HelpText = "sends streaminfo message to the console as feedback")]
+        public int mDataStreamInfo { get; set; }
 
         [Option("leftHanded", Required = false, Default = false, HelpText = "transform right handed to left handed coordinate system")]
         public bool myleftHanded { get; set; }
@@ -135,6 +139,10 @@ namespace NatNetThree2OSC
         private static bool mSendMarkerInfo = false;
         private static bool mVerbose = false;
         private static bool mBundled = false;
+        private static int mDataStreamInfo = 0;
+
+        private static Int16 mProxyHS_data = 0;
+        private static Int16 mProxyHS_ctrl = 0;
 
         private static bool mMatrix = false;
         private static bool mInvMatrix = false;
@@ -155,8 +163,11 @@ namespace NatNetThree2OSC
         private static bool mAssetChanged = false;
 
         // create an OSC Udp sender
-   
-        private static UDPSender OSCsender;
+        private static IPAddress ipAddress;
+
+        private static UDProxy OSCProxy;
+
+        private static byte[] heartbeat_sequence = new byte[] { 47, 104, 98, 0, 44, 0, 0, 0};
 
         static void Main(string[] args)
         {
@@ -181,6 +192,17 @@ namespace NatNetThree2OSC
             Console.WriteLine("Parser Fail");
         }
 
+        public static void StreamInfoThread()
+        {
+            while (true)
+            {
+                Console.WriteLine("streaminfo {0} {1}", mProxyHS_data, mProxyHS_ctrl);
+                mProxyHS_data = 0;
+                mProxyHS_ctrl = 0;
+                Thread.Sleep(mDataStreamInfo);
+            }
+        }
+
         static void Run(Options opts)
         {
             mOscModeMax = (opts.mOscMode.Contains("max")) ? true : false;
@@ -195,12 +217,13 @@ namespace NatNetThree2OSC
             mSendMarkerInfo = opts.mySendMarkerInfo;
             mVerbose = opts.mVerbose;
             mBundled = opts.mBundled;
+            mDataStreamInfo = opts.mDataStreamInfo;
 
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
 
-            Console.WriteLine("\n---- NatNetThree2OSC v. 8.2.0  ----");
-            Console.WriteLine("\n----   20210212 by maybites  ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 8.4.0  ----");
+            Console.WriteLine("\n----   20210426 by maybites  ----");
 
             Console.WriteLine("\nNatNetThree2OSC");
             Console.WriteLine("\t oscSendIP = \t\t({0:N3})", opts.mStrOscSendIP);
@@ -219,55 +242,17 @@ namespace NatNetThree2OSC
             Console.WriteLine("\t multiCastIP = \t\t({0:N3})", opts.mStrMultiCastIP);
             Console.WriteLine("\t motiveDataPort = \t({0})", opts.mIntMotiveDataPort);
             Console.WriteLine("\t motiveCmdPort = \t({0})", opts.mIntMotiveCmdPort);
+            Console.WriteLine("\t dataStreamInfo = \t\t[{0}]", opts.mDataStreamInfo);
             Console.WriteLine("\t verbose = \t\t[{0}]", opts.mVerbose);
 
-            IPAddress ipAddress;
-
-            // parse the ip address
-            if (IPAddress.TryParse(opts.mStrOscSendIP, out ipAddress) == false)
-            {
-                Console.WriteLine("\nInvalid IP address, {0}", opts.mStrOscSendIP);
-
-                return;
-            }
-
-            // intantiate an OSC udp sender
-            OSCsender = new UDPSender(ipAddress.ToString(), opts.mIntOscSendPort);
-
-            //OSCsender.Connect();
-
-            Console.WriteLine("\nNatNetThree2OSC managed client application starting...\n");
-            /*  [NatNet] Initialize client object and connect to the server  */
-            connectToServer(opts);                          // Initialize a NatNetClient object and connect to a server.
-
-            Console.WriteLine("============================ SERVER DESCRIPTOR ================================\n");
-            /*  [NatNet] Confirming Server Connection. Instantiate the server descriptor object and obtain the server description. */
-            bool connectionConfirmed = fetchServerDescriptor();    // To confirm connection, request server description data
-
-            if (connectionConfirmed)                         // Once the connection is confirmed.
-            {
-                Console.WriteLine("============================= DATA DESCRIPTOR =================================\n");
-                Console.WriteLine("Now Fetching the Data Descriptor.\n");
-                fetchDataDescriptor();                  //Fetch and parse data descriptor
-
-                Console.WriteLine("============================= FRAME OF DATA ===================================\n");
-                Console.WriteLine("Now Fetching the Frame Data\n");
-
-                /*  [NatNet] Assigning a event handler function for fetching frame data each time a frame is received   */
-                mNatNet.OnFrameReady += new NatNetML.FrameReadyEventHandler(fetchFrameData);
-               
-                Console.WriteLine("Success: Data Port Connected \n");
-
-                Console.WriteLine("======================== STREAMING IN (PRESS ESC TO EXIT) =====================\n");
-            }
-
             // The cabllback function for receiveing OSC messages
-            SharpOSC.HandleOscPacket callback = delegate (SharpOSC.OscPacket packet)
+            SharpOSC.ProxyOscPacket callback = delegate (SharpOSC.OscPacket packet)
             {
+                mProxyHS_ctrl = 1;
                 var messageReceived = (SharpOSC.OscMessage)packet;
                 if (messageReceived != null && messageReceived.Address.Equals(value: "/motive/command"))
                 {
-                    if(messageReceived.Arguments.Count > 0 && messageReceived.Arguments.IndexOf("refetch") != -1)
+                    if (messageReceived.Arguments.Count > 0 && messageReceived.Arguments.IndexOf("refetch") != -1)
                     {
                         Console.WriteLine("Received Refetching Command.");
                         mAssetChanged = true;
@@ -373,7 +358,56 @@ namespace NatNetThree2OSC
             };
 
 
-            var listener = new SharpOSC.UDPListener(opts.mIntOscCtrlPort, callback);
+            try
+            {
+                Uri myUri = new Uri("http://" + opts.mStrOscSendIP);
+                ipAddress = Dns.GetHostAddresses(myUri.Host)[0];
+            }
+            catch (Exception)
+            {
+                if (IPAddress.TryParse(opts.mStrOscSendIP, out ipAddress) == false)
+                {
+                    Console.WriteLine("\nInvalid IP or URL, {0}", opts.mStrOscSendIP);
+                    return;
+                }
+            }
+
+            // intantiate an OSC udp sender
+            Console.WriteLine("\nStarting OSC sender to {0} on port {1}", ipAddress.ToString(), opts.mIntOscSendPort);
+            OSCProxy = new UDProxy(opts.mStrOscSendIP, opts.mIntOscSendPort, opts.mIntOscCtrlPort, callback);
+
+            if (mDataStreamInfo > 0)
+            {
+                var th = new Thread(StreamInfoThread);
+                th.Start();
+                Console.WriteLine("StreamInfoThread started");
+                Console.WriteLine("streaminfo 0 0");
+            }
+
+            Console.WriteLine("\nNatNetThree2OSC managed client application starting...\n");
+            /*  [NatNet] Initialize client object and connect to the server  */
+            connectToServer(opts);                          // Initialize a NatNetClient object and connect to a server.
+
+            Console.WriteLine("============================ SERVER DESCRIPTOR ================================\n");
+            /*  [NatNet] Confirming Server Connection. Instantiate the server descriptor object and obtain the server description. */
+            bool connectionConfirmed = fetchServerDescriptor();    // To confirm connection, request server description data
+
+            if (connectionConfirmed)                         // Once the connection is confirmed.
+            {
+                Console.WriteLine("============================= DATA DESCRIPTOR =================================\n");
+                Console.WriteLine("Now Fetching the Data Descriptor.\n");
+                fetchDataDescriptor();                  //Fetch and parse data descriptor
+
+                Console.WriteLine("============================= FRAME OF DATA ===================================\n");
+                Console.WriteLine("Now Fetching the Frame Data\n");
+
+                /*  [NatNet] Assigning a event handler function for fetching frame data each time a frame is received   */
+                mNatNet.OnFrameReady += new NatNetML.FrameReadyEventHandler(fetchFrameData);
+               
+                Console.WriteLine("Success: Data Port Connected \n");
+
+                Console.WriteLine("======================== STREAMING IN (PRESS ESC TO EXIT) =====================\n");
+            }
 
 
             while (true)
@@ -412,7 +446,7 @@ namespace NatNetThree2OSC
             mNatNet.Disconnect();
             //listener.Close();
 
-            OSCsender.Close();
+            OSCProxy.Close();
         }
 
         /// <summary>
@@ -502,15 +536,16 @@ namespace NatNetThree2OSC
             if (mBundled)
             {
                 var bundled = new OscBundle((ulong)(data.fTimestamp * 1000), bundle.ToArray());
-                OSCsender.Send(bundled);
+                OSCProxy.Send(bundled);
             }
             else
             {
                 for (int i = 0; i < bundle.Count; i++)
                 {
-                    OSCsender.Send(bundle[i]);
+                    OSCProxy.Send(bundle[i]);
                 }
             }
+            mProxyHS_data = 1;
         }
 
         static void processFrameData(NatNetML.FrameOfMocapData data, List<OscMessage> bundle)
@@ -952,27 +987,27 @@ namespace NatNetThree2OSC
         static void fetchOptions()
         {
             var message = new OscMessage("/script/oscModeSparck", mOscModeSparck);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
             message = new OscMessage("/script/oscModeMax", mOscModeMax);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
             message = new OscMessage("/script/oscModeIsaodra", mOscModeIsa);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
             message = new OscMessage("/script/oscModeTouch", mOscModeTouch);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
             message = new OscMessage("/script/leftHanded", mleftHanded);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
             message = new OscMessage("/script/zUpAxis", mUpAxis);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
             message = new OscMessage("/script/sendSkeletons", mSendSkeletons);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
             message = new OscMessage("/script/sendMarkerInfo", mSendMarkerInfo);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
             message = new OscMessage("/script/bundled", mBundled);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
             message = new OscMessage("/script/calcMatrix", mMatrix);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
             message = new OscMessage("/script/calcInvMatrix", mInvMatrix);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
         }
 
         static void parseDataDescriptor(List<NatNetML.DataDescriptor> description)
@@ -983,7 +1018,7 @@ namespace NatNetThree2OSC
             Console.WriteLine("Total {0} data sets in the capture:", numDataSet);
 
             var message = new OscMessage("/motive/update/start", 1);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
 
             for (int i = 0; i < numDataSet; ++i)
             {
@@ -995,7 +1030,7 @@ namespace NatNetThree2OSC
                         NatNetML.MarkerSet mkset = (NatNetML.MarkerSet)description[i];
                         Console.WriteLine("\tMarkerSet ({0})", mkset.Name);
                         message = new OscMessage("/motive/markerset/id", mkset.Name);
-                        OSCsender.Send(message);
+                        OSCProxy.Send(message);
 
                         break;
 
@@ -1004,7 +1039,7 @@ namespace NatNetThree2OSC
                         Console.WriteLine("\tRigidBody ({0})", rb.Name);
 
                         message = new OscMessage("/motive/rigidbody/id", rb.Name, rb.ID);
-                        OSCsender.Send(message);
+                        OSCProxy.Send(message);
 
                         // Saving Rigid Body Descriptions
                         mRigidBodies.Add(rb);
@@ -1016,7 +1051,7 @@ namespace NatNetThree2OSC
                         Console.WriteLine("\tSkeleton ({0}), Bones:", skl.Name);
 
                         message = new OscMessage("/motive/skeleton/id", skl.Name, skl.ID);
-                        OSCsender.Send(message);
+                        OSCProxy.Send(message);
 
                         //Saving Skeleton Descriptions
                         mSkeletons.Add(skl);
@@ -1025,7 +1060,7 @@ namespace NatNetThree2OSC
                         for (int j = 0; j < skl.nRigidBodies; j++)
                         {
                             message = new OscMessage("/motive/skeleton/id/bone", skl.Name, skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
-                            OSCsender.Send(message);
+                            OSCProxy.Send(message);
 
                             Console.WriteLine("\t\t{0}. {1}", skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
                             int uniqueID = skl.ID * 1000 + skl.RigidBodies[j].ID;
@@ -1040,7 +1075,7 @@ namespace NatNetThree2OSC
                         Console.WriteLine("\tForcePlate ({0})", fp.Serial);
 
                         message = new OscMessage("/motive/forceplate/id", fp.Serial);
-                        OSCsender.Send(message);
+                        OSCProxy.Send(message);
 
                         // Saving Force Plate Channel Names
                         mForcePlates.Add(fp);
@@ -1048,7 +1083,7 @@ namespace NatNetThree2OSC
                         for (int j = 0; j < fp.ChannelCount; j++)
                         {
                             message = new OscMessage("/motive/forceplate/id/channel", fp.Serial, j + 1, fp.ChannelNames[j]);
-                            OSCsender.Send(message);
+                            OSCProxy.Send(message);
 
                             Console.WriteLine("\t\tChannel {0}: {1}", j + 1, fp.ChannelNames[j]);
                         }
@@ -1064,7 +1099,7 @@ namespace NatNetThree2OSC
                 }
             }
             message = new OscMessage("/motive/update/end", 1);
-            OSCsender.Send(message);
+            OSCProxy.Send(message);
 
         }
 

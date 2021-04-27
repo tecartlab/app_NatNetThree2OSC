@@ -1,4 +1,4 @@
-NatNetThree2OSC 8.3.0
+NatNetThree2OSC 8.4.0
 ===================================
 
 
@@ -23,15 +23,16 @@ Using The Application
 -----------------
 
 Usage: NatNetThree2OSC  
-* **--localIP**          Required. IP address of this machine.
+* **--localIP**           Required. IP address of this machine.
 * **--motiveIP**          Required. IP address of the machine Motive is running on.
-* **--oscSendIP**         Required. IP address of the machine OSC data is sent to.
+* **--oscSendIP**         Required. IP-address or URL of the machine OSC data is sent to.
+* **--oscSendPort**       Required. receiving port of the machine OSC data is sent to.
+* **--oscCtrlPort**       (Default: 65111) local listening port to refetch descriptions.
+* **--oscMode**           (Default: max) OSC format (max, isadora, touch, sparck, ambi)
 * **--mulitCastIP**       (Default: 239.255.42.99) Multicast IP Motive is sending on.
 * **--motiveDataPort**    (Default: 1511) Motives data port
 * **--motiveCmdPort**     (Default: 1510) Motives command port
-* **--oscSendPort**       Required. listening port of the machine OSC data is sent to.
-* **--oscCtrlPort**       (Default: 65111) listening port of this service to trigger Motive.
-* **--oscMode**           (Default: max) OSC format (max, isadora, touch, sparck)
+* **--dataStreamInfo**    (Default: 0=off) sends each specified [ms] streaminfo message to the console.
 * **--sendSkeletons**     (Default: false) send skeleton data
 * **--sendMarkerInfo**    (Default: false) send marker info (position data)
 * **--yup2zup**           (Default: false) transform y-up to z-up
@@ -101,6 +102,8 @@ upon streaming, the following messages are sent depending on the OSC Mode
 #### Ambisonics: OSC MODE = ambi
 
 + /icst/ambi/sourceindex/xyz \<rigidbodyID> \<x> \<y> \<z>
+
+in this mode **no** frame messages are sent.
 
 #### SPARCK: OSC MODE = sparck
 
@@ -172,6 +175,8 @@ Open the NatNetSamples inside the /Samples - folder and build NatNetThree2OSC Pr
 ### Dependency
 
 [CommandLine Parser Library](https://github.com/commandlineparser/commandline). How install the package got [here](https://github.com/commandlineparser/commandline/wiki/Getting-Started).
+
+[SharpOSC](https://github.com/tecartlab/SharpOSC/releases/tag/v0.1.2.0). This is a fork from the official repo with a new class that allows "bidirectional" udp connectîons.
 
 Contribute
 ----------
