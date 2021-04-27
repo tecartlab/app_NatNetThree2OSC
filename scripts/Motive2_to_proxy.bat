@@ -1,0 +1,1 @@
+D:\00_core\NatNet2OSC\Motive2.x\NatNetThree2OSC --localIP=10.128.96.182 --motiveIP=10.128.96.250 --oscSendIP=telemersion.zhdk.ch --oscSendPort=11240 --oscCtrlPort=11241 --dataStreamInfo=1000 --oscMode=sparck --yup2zup=true
