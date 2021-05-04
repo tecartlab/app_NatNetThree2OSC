@@ -84,6 +84,9 @@ namespace NatNetThree2OSC
         [Option("oscMode", Separator = ':', Required = false, Default = "max", HelpText = "OSC format (max, isadora, touch)")]
         public IEnumerable<string> mOscMode { get; set; }
 
+        [Option("frameModulo", Required = false, Default = 1, HelpText = "Send every n-th frame")]
+        public int mFrameModulo { get; set; }
+
         [Option("sendSkeletons", Required = false, Default = false, HelpText = "send skeleton data")]
         public bool mySendSkeletons { get; set; }
 
@@ -140,6 +143,7 @@ namespace NatNetThree2OSC
         private static bool mVerbose = false;
         private static bool mBundled = false;
         private static int mDataStreamInfo = 0;
+        private static int mFrameModulo = 0;
 
         private static Int16 mProxyHS_data = 0;
         private static Int16 mProxyHS_ctrl = 0;
@@ -218,12 +222,13 @@ namespace NatNetThree2OSC
             mVerbose = opts.mVerbose;
             mBundled = opts.mBundled;
             mDataStreamInfo = opts.mDataStreamInfo;
+            mFrameModulo = opts.mFrameModulo;
 
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
 
-            Console.WriteLine("\n---- NatNetThree2OSC v. 8.4.0  ----");
-            Console.WriteLine("\n----   20210426 by maybites  ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 8.5.0  ----");
+            Console.WriteLine("\n----   20210504 by maybites  ----");
 
             Console.WriteLine("\nNatNetThree2OSC");
             Console.WriteLine("\t oscSendIP = \t\t({0:N3})", opts.mStrOscSendIP);
@@ -242,7 +247,8 @@ namespace NatNetThree2OSC
             Console.WriteLine("\t multiCastIP = \t\t({0:N3})", opts.mStrMultiCastIP);
             Console.WriteLine("\t motiveDataPort = \t({0})", opts.mIntMotiveDataPort);
             Console.WriteLine("\t motiveCmdPort = \t({0})", opts.mIntMotiveCmdPort);
-            Console.WriteLine("\t dataStreamInfo = \t\t[{0}]", opts.mDataStreamInfo);
+            Console.WriteLine("\t dataStreamInfo = \t[{0}]", opts.mDataStreamInfo);
+            Console.WriteLine("\t frameModulo = \t\t[{0}]", opts.mFrameModulo);
             Console.WriteLine("\t verbose = \t\t[{0}]", opts.mVerbose);
 
             // The cabllback function for receiveing OSC messages
@@ -468,7 +474,6 @@ namespace NatNetThree2OSC
         static void fetchFrameData(NatNetML.FrameOfMocapData data, NatNetML.NatNetClientML client)
         {
             List<OscMessage> bundle = new List<OscMessage>();
-
             if (mVerbose == true)
             {
                 Console.WriteLine("Fetching new frame data.." + data.fTimestamp);
@@ -480,7 +485,7 @@ namespace NatNetThree2OSC
             {
                 mAssetChanged = true;
             }
-            else if (data.iFrame % 1 == 0)
+            else if (data.iFrame % mFrameModulo == 0)
             {
                 /*  Processing and ouputting frame data every 200th frame.
                     This conditional statement is included in order to simplify the program output */

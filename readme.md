@@ -1,4 +1,4 @@
-NatNetThree2OSC 8.4.0
+NatNetThree2OSC 8.5.0
 ===================================
 
 
@@ -32,6 +32,7 @@ Usage: NatNetThree2OSC
 * **--mulitCastIP**       (Default: 239.255.42.99) Multicast IP Motive is sending on.
 * **--motiveDataPort**    (Default: 1511) Motives data port
 * **--motiveCmdPort**     (Default: 1510) Motives command port
+* **--frameModulo**       (Default: 1) Frame reduction: Send every n-th frame
 * **--dataStreamInfo**    (Default: 0=off) sends each specified [ms] streaminfo message to the console.
 * **--sendSkeletons**     (Default: false) send skeleton data
 * **--sendMarkerInfo**    (Default: false) send marker info (position data)
