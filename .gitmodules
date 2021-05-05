@@ -1,4 +1,4 @@
 
 [submodule "dev/Motive2.x"]
 	path = dev/Motive2.x
-	url = git@github.com:tecartlab/app_NatNetThree2OSC.git
+	url = https://github.com/tecartlab/app_NatNetThree2OSC.git
