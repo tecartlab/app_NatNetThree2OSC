@@ -496,7 +496,7 @@ namespace NatNetThree2OSC
                     message = new OscMessage("/f/s", data.iFrame); ;
                     bundle.Add(message);
 
-                    message = new OscMessage("/f/t", (float)data.fTimestamp * 1000f);
+                    message = new OscMessage("/f/t", (Int32)(data.fTimestamp * 1000f));
                     bundle.Add(message);
 
                 }
@@ -505,10 +505,10 @@ namespace NatNetThree2OSC
                     message = new OscMessage("/frame/start", data.iFrame); ;
                     bundle.Add(message);
 
-                    message = new OscMessage("/frame/timestamp", (float)data.fTimestamp * 1000f);
+                    message = new OscMessage("/frame/timestamp", (Int32)(data.fTimestamp * 1000f));
                     bundle.Add(message);
 
-                    message = new OscMessage("/frame/timecode", (double)data.Timecode, (double)data.TimecodeSubframe);
+                    message = new OscMessage("/frame/timecode", (Int32)data.Timecode, (Int32)data.TimecodeSubframe);
                     bundle.Add(message);
                 }
 
@@ -736,7 +736,7 @@ namespace NatNetThree2OSC
                                         bundle.Add(message);
                                     }
                                 }
-                                message = new OscMessage("/rb", rb.ID, 2, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
+                                message = new OscMessage("/rb", rb.ID, 2, (Int32)(data.fTimestamp * 1000f), pxt, pyt, pzt, qxt, qyt, qzt, qwt);
                                 bundle.Add(message);
                             }
 
