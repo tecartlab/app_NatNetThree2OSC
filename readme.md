@@ -1,4 +1,4 @@
-NatNetThree2OSC 8.5.0
+NatNetThree2OSC 8.6.0
 ===================================
 
 
@@ -102,7 +102,7 @@ upon streaming, the following messages are sent depending on the OSC Mode
 
 #### Ambisonics: OSC MODE = ambi
 
-+ /icst/ambi/sourceindex/xyz \<rigidbodyID> \<x> \<y> \<z>
++ /icst/ambi/source/xyz \<rigidbodyName> \<x> \<y> \<z>
 
 in this mode **no** frame messages are sent.
 

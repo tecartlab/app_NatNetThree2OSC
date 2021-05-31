@@ -227,8 +227,8 @@ namespace NatNetThree2OSC
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
 
-            Console.WriteLine("\n---- NatNetThree2OSC v. 8.5.0  ----");
-            Console.WriteLine("\n----   20210504 by maybites  ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 8.6.0  ----");
+            Console.WriteLine("\n----    20210531 by maybites   ----");
 
             Console.WriteLine("\nNatNetThree2OSC");
             Console.WriteLine("\t oscSendIP = \t\t({0:N3})", opts.mStrOscSendIP);
@@ -663,7 +663,7 @@ namespace NatNetThree2OSC
                         {
                             if (mOscModeAmbi)
                             {
-                                message = new OscMessage("/icst/ambi/sourceindex/xyz", rb.ID, pxt, pyt, pzt);
+                                message = new OscMessage("/icst/ambi/source/xyz", rb.Name, pxt, pyt, pzt);
                                 bundle.Add(message);
                             }
                             if (mOscModeMax)
