@@ -1,4 +1,4 @@
-NatNetThree2OSC 8.6.0
+NatNetThree2OSC 8.7.0
 ===================================
 
 

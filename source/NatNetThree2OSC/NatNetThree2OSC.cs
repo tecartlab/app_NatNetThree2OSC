@@ -96,7 +96,7 @@ namespace NatNetThree2OSC
         [Option("yup2zup", Required = false, Default = false, HelpText = "transform y-up to z-up")]
         public bool myUp2zUp { get; set; }
 
-        [Option("dataStreamInfo", Required = false, Default = 0, HelpText = "sends streaminfo message to the console as feedback")]
+        [Option("dataStreamInfo", Required = false, Default = 0, HelpText = "sends each specified [ms] a streaminfo message to the console as feedback")]
         public int mDataStreamInfo { get; set; }
 
         [Option("leftHanded", Required = false, Default = false, HelpText = "transform right handed to left handed coordinate system")]
@@ -147,6 +147,8 @@ namespace NatNetThree2OSC
 
         private static Int16 mProxyHS_data = 0;
         private static Int16 mProxyHS_ctrl = 0;
+
+        private static Int16 mProxyHS_frameCounter = 0;
 
         private static bool mMatrix = false;
         private static bool mInvMatrix = false;
@@ -200,9 +202,11 @@ namespace NatNetThree2OSC
         {
             while (true)
             {
-                Console.WriteLine("streaminfo {0} {1}", mProxyHS_data, mProxyHS_ctrl);
+                float fps = (float)mProxyHS_frameCounter / (float)mDataStreamInfo * 1000.0f;
+                Console.WriteLine("streaminfo {0} {1} {2}", mProxyHS_data, mProxyHS_ctrl, fps);
                 mProxyHS_data = 0;
                 mProxyHS_ctrl = 0;
+                mProxyHS_frameCounter = 0;
                 Thread.Sleep(mDataStreamInfo);
             }
         }
@@ -487,6 +491,7 @@ namespace NatNetThree2OSC
             }
             else if (data.iFrame % mFrameModulo == 0)
             {
+                mProxyHS_frameCounter++;
                 /*  Processing and ouputting frame data every 200th frame.
                     This conditional statement is included in order to simplify the program output */
                 var message = new OscMessage("/f/s", data.iFrame);
