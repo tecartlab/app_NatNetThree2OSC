@@ -231,7 +231,7 @@ namespace NatNetThree2OSC
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
 
-            Console.WriteLine("\n---- NatNetThree2OSC v. 8.6.0  ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 8.7.1  ----");
             Console.WriteLine("\n----    20210531 by maybites   ----");
 
             Console.WriteLine("\nNatNetThree2OSC");
@@ -492,6 +492,8 @@ namespace NatNetThree2OSC
             else if (data.iFrame % mFrameModulo == 0)
             {
                 mProxyHS_frameCounter++;
+
+                int myTimestamp = (int)((Int64)(data.fTimestamp * 1000f) % 86400000);
                 /*  Processing and ouputting frame data every 200th frame.
                     This conditional statement is included in order to simplify the program output */
                 var message = new OscMessage("/f/s", data.iFrame);
@@ -501,7 +503,7 @@ namespace NatNetThree2OSC
                     message = new OscMessage("/f/s", data.iFrame); ;
                     bundle.Add(message);
 
-                    message = new OscMessage("/f/t", (Int32)(data.fTimestamp * 1000f));
+                    message = new OscMessage("/f/t", myTimestamp);
                     bundle.Add(message);
 
                 }
@@ -510,10 +512,10 @@ namespace NatNetThree2OSC
                     message = new OscMessage("/frame/start", data.iFrame); ;
                     bundle.Add(message);
 
-                    message = new OscMessage("/frame/timestamp", (Int32)(data.fTimestamp * 1000f));
+                    message = new OscMessage("/frame/timestamp", myTimestamp);
                     bundle.Add(message);
 
-                    message = new OscMessage("/frame/timecode", (Int32)data.Timecode, (Int32)data.TimecodeSubframe);
+                    message = new OscMessage("/frame/timecode", (Int64)data.Timecode, (Int64)data.TimecodeSubframe);
                     bundle.Add(message);
                 }
 
@@ -529,7 +531,7 @@ namespace NatNetThree2OSC
                     Console.WriteLine("[Recording] Frame #{0} Received:", data.iFrame);
                 */
 
-                processFrameData(data, bundle);
+                processFrameData(data, bundle, myTimestamp);
 
                 if (mOscModeSparck)
                 {
@@ -558,7 +560,7 @@ namespace NatNetThree2OSC
             mProxyHS_data = 1;
         }
 
-        static void processFrameData(NatNetML.FrameOfMocapData data, List<OscMessage> bundle)
+        static void processFrameData(NatNetML.FrameOfMocapData data, List<OscMessage> bundle, int myTimestamp)
         {
 
             var message = new OscMessage("/marker");
@@ -604,7 +606,7 @@ namespace NatNetThree2OSC
 
             if (mVerbose == true)
             {
-                Console.WriteLine("\tStreaming {0} rigidbodies in frame {1}", mRigidBodies.Count, data.iFrame);
+                Console.WriteLine("\tStreaming {0} rigidbodies in frame {1} an stamp {2}", mRigidBodies.Count, data.iFrame, myTimestamp);
             }
 
             /*  Parsing Rigid Body Frame Data   */
@@ -741,7 +743,7 @@ namespace NatNetThree2OSC
                                         bundle.Add(message);
                                     }
                                 }
-                                message = new OscMessage("/rb", rb.ID, 2, (Int32)(data.fTimestamp * 1000f), pxt, pyt, pzt, qxt, qyt, qzt, qwt);
+                                message = new OscMessage("/rb", rb.ID, 2, myTimestamp, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
                                 bundle.Add(message);
                             }
 
