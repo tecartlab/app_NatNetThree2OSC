@@ -1,1 +1,1 @@
-D:\00_core\NatNet2OSC\Motive2.x\NatNetThree2OSC --localIP=10.128.96.187 --motiveIP=10.128.96.187 --oscSendIP=10.128.96.182 --oscSendPort=54321 --oscCtrlPort=54323 --oscMode=sparck --yup2zup=true --sendMarkerInfo
+D:\00_core\NatNet2OSC\Motive2.x\NatNetThree2OSC --localIP=10.128.96.189 --motiveIP=10.128.96.189 --oscSendIP=10.128.96.101 --oscSendPort=54321 --oscCtrlPort=54323 --oscMode=sparck --yup2zup=true --sendMarkerInfo
