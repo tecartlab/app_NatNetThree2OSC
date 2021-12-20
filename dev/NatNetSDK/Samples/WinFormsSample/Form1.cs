@@ -90,8 +90,9 @@ namespace WinFormTestApp
         Hashtable htRigidBodies = new Hashtable();
         Hashtable htRigidBodyMarkers = new Hashtable();
         
+        Hashtable htSkels = new Hashtable();
         Hashtable htSkelRBs = new Hashtable();
-        
+
         List<ForcePlate> mForcePlates = new List<ForcePlate>();
         Hashtable htForcePlates = new Hashtable();
         
@@ -145,7 +146,7 @@ namespace WinFormTestApp
         TextWriter mWriter;
 
         // auto-connect
-        bool mWantAutoconnect = true;
+        bool mWantAutoconnect = false;
         bool mServerDetected= false;
         bool mServerEstablished = false;
         string mDetectedLocalIP = "";
@@ -231,6 +232,7 @@ namespace WinFormTestApp
                 }
             });
 
+            /*
             // create and run a ping time thread
             PingCallback pingCallback = new PingCallback(UpdatePing);
             UpdatePingTimeThread = new Thread(() =>
@@ -250,6 +252,8 @@ namespace WinFormTestApp
                 }
             });
             UpdatePingTimeThread.Start();
+            */
+            
 
             // Auto-connect to first detected Motive
             m_Discovery.OnServerDiscovered += delegate (NatNetML.DiscoveredServer server)
@@ -313,6 +317,12 @@ namespace WinFormTestApp
         /// </summary>
         private void Connect()
         {
+            if (comboBoxLocal.SelectedItem == null)
+                return;
+
+            if (textBoxServer.Text.Length == 0)
+                return;
+
             // [NatNet] connect to a NatNet server
             int returnCode = 0;
             string strLocalIP = comboBoxLocal.SelectedItem.ToString();
@@ -334,6 +344,19 @@ namespace WinFormTestApp
             }
             connectParams.ServerAddress = strServerIP;
             connectParams.LocalAddress = strLocalIP;
+            
+            // Test: subscribed data only:
+            //connectParams.SubscribedDataOnly = SubscribeOnlyCheckBox.Checked;
+            
+            // Test : requested bitstream version
+            /*
+            connectParams.BitstreamMajor = 1;
+            connectParams.BitstreamMinor = 2;
+            connectParams.BitstreamRevision = 3;
+            connectParams.BitstreamBuild = 4;
+            */
+
+
             returnCode = m_NatNet.Connect( connectParams );
             if (returnCode == 0)
             {
@@ -653,7 +676,17 @@ namespace WinFormTestApp
                         for (int iChannel = 0; iChannel < fp.nChannels; iChannel++)
                         {
                             if (fp.ChannelData[iChannel].nFrames > 0)
-                                dataGridView1.Rows[rowIndex].Cells[iChannel + 1].Value = fp.ChannelData[iChannel].Values[0];
+                            {
+                                int mocapAlignedSubsampleIndex = 0;
+                                if (fp.ChannelData[iChannel].nFrames > 1)
+                                {
+                                    int id = fp.ChannelData[iChannel].nFrames / 2;
+                                    int rem = fp.ChannelData[iChannel].nFrames % 2;
+                                    mocapAlignedSubsampleIndex = (id + rem) - 1;
+                                }
+
+                                dataGridView1.Rows[rowIndex].Cells[iChannel + 1].Value = fp.ChannelData[iChannel].Values[mocapAlignedSubsampleIndex];
+                            }
                         }
                     }
                 }
@@ -669,10 +702,29 @@ namespace WinFormTestApp
                     int rowIndex = (int)htDevices[key];
                     if (rowIndex >= 0)
                     {
-                        for (int iChannel = 0; iChannel < device.nChannels; iChannel++)
+                        int nChannels = Math.Min(dataGridView1.Rows[rowIndex].Cells.Count, device.nChannels);
+                        for (int iChannel = 0; iChannel < nChannels; iChannel++)
                         {
                             if (device.ChannelData[iChannel].nFrames > 0)
-                                dataGridView1.Rows[rowIndex].Cells[iChannel + 1].Value = device.ChannelData[iChannel].Values[0];
+                            {
+                                int mocapAlignedSubsampleIndex = 0;
+                                if (device.ChannelData[iChannel].nFrames > 1)
+                                {
+                                    int id = device.ChannelData[iChannel].nFrames / 2;
+                                    int rem = device.ChannelData[iChannel].nFrames % 2;
+                                    mocapAlignedSubsampleIndex = (id + rem) - 1;
+                                }
+
+                                try
+                                {
+                                    dataGridView1.Rows[rowIndex].Cells[iChannel + 1].Value = device.ChannelData[iChannel].Values[mocapAlignedSubsampleIndex];
+                                }
+                                catch (Exception e)
+                                {
+                                    // ok - likely cells is out of range
+                                    string ex = e.Message;
+                                }
+                            }
                         }
                     }
                 }
@@ -711,9 +763,10 @@ namespace WinFormTestApp
                     bool bModelSolved = (m.parameters & (1 << 2)) != 0;
                     bool bHasModel = (m.parameters & (1 << 3)) != 0;
                     bool bUnlabeled = (m.parameters & (1 << 4)) != 0;
+                    bool bActive = (m.parameters & (1 << 5)) != 0;
 
 
-                    if(activeMarker)
+                    if (bActive || activeMarker)
                     {
                         name = "Active Marker: " + m.ID;
                     }
@@ -727,7 +780,7 @@ namespace WinFormTestApp
                         {
                             NatNetClientML.DecodeID(m.ID, out assetID, out memberID);
                             int key = assetID.GetHashCode();
-                            if (htRigidBodies.Contains(key) || htSkelRBs.Contains(key))
+                            if (htRigidBodies.Contains(key) || htSkels.Contains(key) || htSkelRBs.Contains(key))
                                 name = "Passive Marker (AssetID: " + assetID + "  MemberID: " + memberID + ")";
                             else
                                 name = "Passive Marker (PointCloud ID: " + m.ID + ")";
@@ -762,15 +815,18 @@ namespace WinFormTestApp
 
             }
 
-           // clear any remaining rows ( e.g. from markers not present in this frame)
-            while(currentRow < dataGridView1.RowCount)
+            // clear any remaining rows ( e.g. from markers not present in this frame)
+            if (LabeledMarkersCheckBox.Checked)
             {
-                dataGridView1.Rows[currentRow].Cells[0].Value = "";
-                dataGridView1.Rows[currentRow].Cells[1].Value = "";
-                dataGridView1.Rows[currentRow].Cells[2].Value = "";
-                dataGridView1.Rows[currentRow].Cells[3].Value = "";
-                dataGridView1.Rows[currentRow].Cells[4].Value = "";
-                currentRow++;
+                while (currentRow < dataGridView1.RowCount)
+                {
+                    dataGridView1.Rows[currentRow].Cells[0].Value = "";
+                    dataGridView1.Rows[currentRow].Cells[1].Value = "";
+                    dataGridView1.Rows[currentRow].Cells[2].Value = "";
+                    dataGridView1.Rows[currentRow].Cells[3].Value = "";
+                    dataGridView1.Rows[currentRow].Cells[4].Value = "";
+                    currentRow++;
+                }
             }
 
             // if rows not empty, add frame telemetry to grid, so its graphable
@@ -807,7 +863,11 @@ namespace WinFormTestApp
                 dataGridView1.Rows[0].Cells[11].Value = transitLatencyMs.ToString( "F3" );
 
                 // Ping ( Client -> Server -> Client )
-                dataGridView1.Rows[0].Cells[13].Value = mLastPingTimeMs.ToString("F3");
+                // Test : overriding timecode as packet size
+                this.Ping.HeaderText = "PacketSize(bytes)";
+                uint packetSize = m_FrameOfData.Timecode;
+                dataGridView1.Rows[0].Cells[13].Value = packetSize.ToString();
+                //dataGridView1.Rows[0].Cells[13].Value = mLastPingTimeMs.ToString("F3");
 
             }
 
@@ -839,6 +899,7 @@ namespace WinFormTestApp
             htMarkers.Clear();
             htRigidBodies.Clear();
             htRigidBodyMarkers.Clear();
+            htSkels.Clear();
             htSkelRBs.Clear();
 
             OutputMessage("Retrieving Data Descriptions....");
@@ -916,6 +977,16 @@ namespace WinFormTestApp
                     else if (d.type == (int)NatNetML.DataDescriptorType.eSkeletonData)
                     {
                         NatNetML.Skeleton sk = (NatNetML.Skeleton)d;
+                        int key = sk.ID.GetHashCode();
+                        try
+                        {
+                            htSkels.Add(key, sk);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Duplicate Skeleton ID Detected : " + ex.Message);
+                        }
+
 
                         OutputMessage("Data Def " + iObject.ToString() + " [Skeleton]");
                         OutputMessage(" Name : " + sk.Name);
@@ -932,13 +1003,13 @@ namespace WinFormTestApp
                             OutputMessage(" OffsetZ  : " + rb.offsetz);
 
                             //mRigidBodies.Add(rb);
-                            int key = GetUniqueRBKey(sk.ID, rb.ID);
+                            key = GetUniqueRBKey(sk.ID, rb.ID);
                             htSkelRBs.Add(key, rb);
-#if false
+#if true
                             int rowIndex = dataGridView1.Rows.Add("Bone: " + rb.Name);
                             // RigidBodyIDToRow map
                             int uniqueID = GetUniqueRBKey(sk.ID, rb.ID);
-                            int key = uniqueID.GetHashCode();
+                            key = uniqueID.GetHashCode();
                             if (htRigidBodies.ContainsKey(key))
                                 MessageBox.Show("Duplicate RigidBody ID");
                             else
@@ -962,7 +1033,8 @@ namespace WinFormTestApp
 
                         mForcePlates.Add(fp);
 
-                        int rowIndex = dataGridView1.Rows.Add("ForcePlate: " + fp.Serial);
+                        //int rowIndex = dataGridView1.Rows.Add("ForcePlate: " + fp.Serial);
+                        int rowIndex = dataGridView1.Rows.Add("ForcePlate " + fp.ID.ToString());
                         // ForcePlateIDToRow map
                         int key = fp.ID.GetHashCode();
                         htForcePlates.Add(key, rowIndex);
@@ -984,9 +1056,27 @@ namespace WinFormTestApp
                         }
                         mDevices.Add(device);
 
+
                         int rowIndex = dataGridView1.Rows.Add("Device: " + device.Name);
                         int key = device.ID.GetHashCode();
-                        htDevices.Add(key, rowIndex);
+                        if (htDevices.ContainsKey(key))
+                            MessageBox.Show("Duplicate Device ID");
+                        else
+                            htDevices.Add(key, rowIndex);
+
+                    }
+                    // Cameras
+                    else if (d.type == (int)NatNetML.DataDescriptorType.eCameraData)
+                    {
+                        NatNetML.Camera camera = (NatNetML.Camera)d;
+                        OutputMessage("Data Def " + iObject.ToString() + " [Camera]");
+                        OutputMessage(" Name : " + camera.Name);
+
+                        String strPos = String.Format(" Position {0},{1},{2}", camera.x, camera.y, camera.z);
+                        OutputMessage(strPos);
+
+                        String strOri = String.Format(" Orientation {0},{1},{2},{3}", camera.qx, camera.qy, camera.qz, camera.qw);
+                        OutputMessage(strOri);
                     }
                     else
                     {
@@ -1690,6 +1780,15 @@ namespace WinFormTestApp
             SetDataPolling(PollCheckBox.Checked);
         }
 
+        private void SubscribeButton_CheckChanged(object sender, EventArgs e)
+        {
+            if(checkBoxConnect.Checked)
+            {
+                Disconnect();
+                Connect();
+            }
+        }
+
         private void SetPropertyButton_Click(object sender, EventArgs e)
         {
             int nBytes = 0;
@@ -1730,7 +1829,7 @@ namespace WinFormTestApp
                 else
                 {
                     PropertyValueText.Text = result;
-                    OutputMessage(command + " handled and succeeded.");
+                    OutputMessage(command + " Value = " + result);
                 }
             }
         }
@@ -1739,7 +1838,7 @@ namespace WinFormTestApp
         {
             int nBytes = 0;
             byte[] response = new byte[10000];
-            string command = "SetProperty," + NodeNameText.Text + "," + "Active,False";
+            string command = "SetProperty," + NodeNameText.Text + "," + "Enable,False";
             int rc = m_NatNet.SendMessageAndWait(command, out response, out nBytes);
             if (rc != 0)
             {
@@ -1759,7 +1858,7 @@ namespace WinFormTestApp
         {
             int nBytes = 0;
             byte[] response = new byte[10000];
-            string command = "SetProperty," + NodeNameText.Text + "," + "Active,True";
+            string command = "SetProperty," + NodeNameText.Text + "," + "Enable,True";
             int rc = m_NatNet.SendMessageAndWait(command, out response, out nBytes);
             if (rc != 0)
             {
@@ -1820,11 +1919,54 @@ namespace WinFormTestApp
 
         }
 
-}
+        private void CommandButton_Click(object sender, EventArgs e)
+        {
+            int nBytes = 0;
+            byte[] response = new byte[10000];
+            string command = CommandText.Text;
+            //string command = "Bitstream," + SubscribeTextCommand.Text;
+            int rc = m_NatNet.SendMessageAndWait(command, out response, out nBytes);
+            if (rc != 0)
+            {
+                OutputMessage(command + " not handled by server");
+            }
+            else
+            {
+                // Command Response Buffer contents will vary by command:
+                //
+                //  - Most commands : response buffer is a 4 byte success code (success=0, failure=1)
+                //  - Value query commands (e.g. GetProperty) : response buffer is either the value (if retrieved), else "error"
 
-// Wrapper class for the windows high performance timer QueryPerfCounter
-// ( adapted from MSDN https://msdn.microsoft.com/en-us/library/ff650674.aspx )
-public class QueryPerfCounter
+                if( command.Contains("GetProperty") || (command.Contains("GetTakeProperty")))
+                {
+                    System.Text.Encoding encoding = System.Text.Encoding.UTF8;
+                    string result = new string(encoding.GetChars(response));
+                    result = result.Trim('\0'); // .NET strings are not null terminated
+                    if ((result.Length == 0) || (result == "error"))
+                        OutputMessage(command + " handled but failed.");
+                    else
+                    {
+                        PropertyValueText.Text = result;
+                        OutputMessage(command + " Value = " + result);
+                    }
+                }
+                else
+                {
+                    int opResult = System.BitConverter.ToInt32(response, 0);
+                    if (opResult == 0)
+                        OutputMessage(command + " handled and succeeded.");
+                    else
+                        OutputMessage(command + " handled but failed.");
+                }
+
+            }
+        }
+
+    }
+
+    // Wrapper class for the windows high performance timer QueryPerfCounter
+    // ( adapted from MSDN https://msdn.microsoft.com/en-us/library/ff650674.aspx )
+    public class QueryPerfCounter
     {
         [DllImport("KERNEL32")]
         private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);

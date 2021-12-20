@@ -1,9 +1,9 @@
-m:\npoint\apps\natnet\natnetsdk\samples\packetclient\x64\release\vc140.pdb
+m:\npoint\apps\natnet\natnetsdk\samples\packetclient\x64\release\vc142.pdb
 m:\npoint\apps\natnet\natnetsdk\samples\packetclient\x64\release\packetclient.obj
 m:\npoint\apps\natnet\natnetsdk\samples\bin\x64\packetclient.exe
+m:\npoint\apps\natnet\natnetsdk\samples\bin\x64\packetclient.pdb
 m:\npoint\apps\natnet\natnetsdk\samples\bin\x64\packetclient.ipdb
 m:\npoint\apps\natnet\natnetsdk\samples\bin\x64\packetclient.iobj
-m:\npoint\apps\natnet\natnetsdk\samples\bin\x64\packetclient.pdb
 m:\npoint\apps\natnet\natnetsdk\samples\packetclient\..\bin\x64\packetclient.exe
 m:\npoint\apps\natnet\natnetsdk\samples\packetclient\x64\release\packetclient.tlog\cl.command.1.tlog
 m:\npoint\apps\natnet\natnetsdk\samples\packetclient\x64\release\packetclient.tlog\cl.read.1.tlog
@@ -11,3 +11,4 @@ m:\npoint\apps\natnet\natnetsdk\samples\packetclient\x64\release\packetclient.tl
 m:\npoint\apps\natnet\natnetsdk\samples\packetclient\x64\release\packetclient.tlog\link.command.1.tlog
 m:\npoint\apps\natnet\natnetsdk\samples\packetclient\x64\release\packetclient.tlog\link.read.1.tlog
 m:\npoint\apps\natnet\natnetsdk\samples\packetclient\x64\release\packetclient.tlog\link.write.1.tlog
+m:\npoint\apps\natnet\natnetsdk\samples\packetclient\x64\release\packetclient.tlog\packetclient.write.1u.tlog

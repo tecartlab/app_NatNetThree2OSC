@@ -423,9 +423,10 @@ void RenderOGLScene()
 
     // Setup OpenGL viewport
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear buffers
+    glClearColor( 0.098f, 0.098f, 0.098f, 1.0f );
     glLoadIdentity(); // Load identity matrix
-    GLfloat glfLightPos[] = { -4.0f, 4.0f, 4.0f, 0.0f };
     GLfloat glfLightAmb[] = { .3f, .3f, .3f, 1.0f };
+    GLfloat glfLightPos[] = { -4.0f, 4.0f, 4.0f, 0.5f };
     glLightfv(GL_LIGHT0, GL_AMBIENT, glfLightAmb);
     glLightfv(GL_LIGHT1, GL_POSITION, glfLightPos);
     glEnable(GL_COLOR_MATERIAL);
@@ -451,15 +452,15 @@ void RenderOGLScene()
     // x
     glLineWidth(3.0f);
     glBegin(GL_LINES);
-    glColor3f(.8f, 0.0f, 0.0f);
+    glColor3f(1.0f, 0.0f, 0.0f);
     glVertex3f(0, 0, 0);
     glVertex3f(300, 0, 0);
     // y
-    glColor3f(0.0f, .8f, 0.0f);
+    glColor3f(0.0f, 1.0f, 0.0f);
     glVertex3f(0, 0, 0);
     glVertex3f(0, 300, 0);
     // z
-    glColor3f(0.0f, 0.0f, .8f);
+    glColor3f(0.0f, 0.5294f, 1.0f);
     glVertex3f(0, 0, 0);
     glVertex3f(0, 0, 300);
     glEnd();
@@ -502,7 +503,7 @@ void RenderOGLScene()
             ConvertRHSRotZUpToYUp(q.x, q.y, q.z, q.w);
         }
 
-        // Convert Motive quaternion output to euler angles
+        // Convert Motive quaternion output to Euler angles
         // Motive coordinate conventions : X(Pitch), Y(Yaw), Z(Roll), Relative, RHS
         order = EulOrdXYZr;
         ea = Eul_FromQuat(q, order);
@@ -523,7 +524,7 @@ void RenderOGLScene()
         glRotatef(ea.z, 0.0f, 0.0f, 1.0f);
 
         /*
-        // alternate Z-up conversion - convert only euler rotation interpretation
+        // alternate Z-up conversion - convert only Euler rotation interpretation
         //  Yyup  =  Zzup
         //  Zyup  =  -Yzup
         glRotatef(ea.x, 1.0f, 0.0f, 0.0f);
@@ -537,7 +538,7 @@ void RenderOGLScene()
 
         if (showText)
         {
-            glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+            glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
             std::string rigidBodyName = mapIDToName.at(rigidBodies.ID(i));
             glPrinter.Print(textX, textY, "%s (Pitch: %3.1f, Yaw: %3.1f, Roll: %3.1f)", rigidBodyName.c_str(), ea.x, ea.y, ea.z);
             textY -= 100.0f;

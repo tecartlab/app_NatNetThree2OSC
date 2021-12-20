@@ -71,20 +71,21 @@ DWORD WINAPI ReceiverListenThread(void* dummy)
         if( (nDataBytesReceived == 0) || (nDataBytesReceived == SOCKET_ERROR) )
             continue;
 
+        unsigned long thisPID = GetCurrentProcessId();
+        unsigned long senderPID = ParsePID(szData);
+        if (thisPID == senderPID)
+        {
+            // Received from self - ignoring
+            continue;
+        }
+
         // print received data
         printf("\nRECEIVED [from %d.%d.%d.%d:%d] : %s\n",
             TheirAddress.sin_addr.S_un.S_un_b.s_b1, TheirAddress.sin_addr.S_un.S_un_b.s_b2,
             TheirAddress.sin_addr.S_un.S_un_b.s_b3, TheirAddress.sin_addr.S_un.S_un_b.s_b4,
             ntohs(TheirAddress.sin_port), szData);
-
-        unsigned long thisPID = GetCurrentProcessId();
-        unsigned long senderPID = ParsePID(szData);
-        if(thisPID == senderPID)
-        {
-            printf( "\nReceived from self - ignoring\n");
-        }
-
     }
+
     return 0;
 }
 
@@ -230,17 +231,21 @@ int main(int argc, char* argv[])
     ToAddr.sin_port = htons(PORT_COMMAND_XML); 
     ToAddr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
 
-    printf("\nListening...\n");
 
-    // message
+    // XML message format:
     // <?xml version="1.0" encoding="UTF-8" standalone="no" ?><CaptureStart><TimeCode VALUE="12 13 14 14 0 0 1 1"/><Name VALUE="RemoteTriggerTest_take01"/><Notes VALUE=""/><Description VALUE=""/><DatabasePath VALUE="S:/shared/testfolder/"/><PacketID VALUE="0"/></CaptureStart>
     
     // use pid to allow listener to ignore packets from self  
     unsigned long pid = GetCurrentProcessId();
     char szMessage[512];
 
+    printf("\nCommands:\nx : Send XML command to Motive to start recording.\nz : Send XML command to Motive to stop recording.\nq : exit");
+
+    printf("\n\nListening...\n");
+
     int c;
     bool bExit = false;
+
     while (!bExit)
     {
         c =_getch();
@@ -249,10 +254,9 @@ int main(int argc, char* argv[])
         case 'x':
             // broadcast XML formatted "record start" command
             // standard format
-            //sprintf(szMessage, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?><CaptureStart><TimeCode VALUE=\"12 13 14 15 0 0 1 1\"/><Name VALUE=\"RemoteTriggerTest_take01\"/><Notes VALUE=""/><Description VALUE=""/><DatabasePath VALUE=\"S:/shared/testfolder/\"/><PacketID VALUE=\"0\"/><ProcessID VALUE=\"%d\"/></CaptureStart>", pid);
+            //sprintf(szMessage, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?><CaptureStart><TimeCode VALUE=\"12 13 14 15 0 0 1 1\"/><Name VALUE=\"RemoteTriggerTest_take01\"/><Notes VALUE=\"\"/><Description VALUE=\"\"/><DatabasePath VALUE=\"S:/shared/testfolder/\"/><PacketID VALUE=\"0\"/><ProcessID VALUE=\"%d\"/></CaptureStart>", pid);
             // no-header format
-            sprintf(szMessage, "<CaptureStart><TimeCode VALUE=\"12 13 14 15 0 0 1 1\"/><Name VALUE=\"RemoteTriggerTest_take01\"/><Notes VALUE=""/><Description VALUE=""/><DatabasePath VALUE=\"S:/shared/testfolder/\"/><PacketID VALUE=\"0\"/><ProcessID VALUE=\"%d\"/></CaptureStart>", pid);
-            //retval = sendto(senderSocket, (char *)szMessage, 4 + strlen(szMessage), 0, (sockaddr *)&ToAddr, sizeof(ToAddr));
+            sprintf(szMessage, "<CaptureStart><TimeCode VALUE=\"\"/><Name VALUE=\"RemoteTriggerTest_take01\"/><Notes VALUE=\"\"/><Description VALUE=\"\"/><DatabasePath VALUE=\"S:/shared/testfolder/\"/><PacketID VALUE=\"0\"/><ProcessID VALUE=\"%d\"/></CaptureStart>", pid);
             retval = sendto(receiverSocket, (char *)szMessage, 4 + strlen(szMessage), 0, (sockaddr *)&ToAddr, sizeof(ToAddr));
             if(retval != SOCKET_ERROR)
             {
@@ -264,8 +268,8 @@ int main(int argc, char* argv[])
             break;	
         case 'z':
             // broadcast XML formatted "record stop" command
-            sprintf(szMessage, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?><CaptureStop><TimeCode VALUE=\"12 13 14 15 0 0 1 1\"/><Name VALUE=\"RemoteTriggerTest_take01\"/><Notes VALUE=""/><Description VALUE=""/><DatabasePath VALUE=\"S:/shared/testfolder/\"/><PacketID VALUE=\"0\"/><ProcessID VALUE=\"%d\"/></CaptureStop>", pid);
-            retval = sendto(senderSocket, (char *)szMessage, 4 + strlen(szMessage), 0, (sockaddr *)&ToAddr, sizeof(ToAddr));
+            sprintf(szMessage, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?><CaptureStop><TimeCode VALUE=\"12 13 14 15 0 0 1 1\"/><Name VALUE=\"RemoteTriggerTest_take01\"/><Notes VALUE=\"\"/><Description VALUE=\"\"/><DatabasePath VALUE=\"S:/shared/testfolder/\"/><PacketID VALUE=\"0\"/><ProcessID VALUE=\"%d\"/></CaptureStop>", pid);
+            retval = sendto(receiverSocket, (char *)szMessage, 4 + strlen(szMessage), 0, (sockaddr *)&ToAddr, sizeof(ToAddr));
             if(retval != SOCKET_ERROR)
             {
                 printf("\nSENT (to %d.%d.%d.%d:%d) : %s\n",

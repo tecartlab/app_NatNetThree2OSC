@@ -72,6 +72,8 @@ namespace WinFormTestApp
             this.label1 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.SubscribeOnlyCheckBox = new System.Windows.Forms.CheckBox();
+            this.RadioBroadcast = new System.Windows.Forms.RadioButton();
             this.LabeledMarkersCheckBox = new System.Windows.Forms.CheckBox();
             this.PollCheckBox = new System.Windows.Forms.CheckBox();
             this.RecordDataButton = new System.Windows.Forms.CheckBox();
@@ -89,6 +91,8 @@ namespace WinFormTestApp
             this.RadioUnicast = new System.Windows.Forms.RadioButton();
             this.RadioMulticast = new System.Windows.Forms.RadioButton();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.CommandButton = new System.Windows.Forms.Button();
+            this.CommandText = new System.Windows.Forms.TextBox();
             this.GetModeButton = new System.Windows.Forms.Button();
             this.GetTakeRangeButton = new System.Windows.Forms.Button();
             this.TestButton = new System.Windows.Forms.Button();
@@ -115,7 +119,6 @@ namespace WinFormTestApp
             this.PropertyValueText = new System.Windows.Forms.TextBox();
             this.SetPropertyButton = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.RadioBroadcast = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
@@ -459,6 +462,7 @@ namespace WinFormTestApp
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.SubscribeOnlyCheckBox);
             this.tabPage1.Controls.Add(this.RadioBroadcast);
             this.tabPage1.Controls.Add(this.LabeledMarkersCheckBox);
             this.tabPage1.Controls.Add(this.PollCheckBox);
@@ -486,10 +490,31 @@ namespace WinFormTestApp
             this.tabPage1.Text = "Connect";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // SubscribeOnlyCheckBox
+            // 
+            this.SubscribeOnlyCheckBox.AutoSize = true;
+            this.SubscribeOnlyCheckBox.Location = new System.Drawing.Point(217, 50);
+            this.SubscribeOnlyCheckBox.Name = "SubscribeOnlyCheckBox";
+            this.SubscribeOnlyCheckBox.Size = new System.Drawing.Size(97, 17);
+            this.SubscribeOnlyCheckBox.TabIndex = 32;
+            this.SubscribeOnlyCheckBox.Text = "Subscribe Only";
+            this.SubscribeOnlyCheckBox.UseVisualStyleBackColor = true;
+            this.SubscribeOnlyCheckBox.CheckedChanged += new System.EventHandler(this.SubscribeButton_CheckChanged);
+            // 
+            // RadioBroadcast
+            // 
+            this.RadioBroadcast.AutoSize = true;
+            this.RadioBroadcast.Location = new System.Drawing.Point(197, 73);
+            this.RadioBroadcast.Name = "RadioBroadcast";
+            this.RadioBroadcast.Size = new System.Drawing.Size(73, 17);
+            this.RadioBroadcast.TabIndex = 31;
+            this.RadioBroadcast.Text = "Broadcast";
+            this.RadioBroadcast.UseVisualStyleBackColor = true;
+            // 
             // LabeledMarkersCheckBox
             // 
             this.LabeledMarkersCheckBox.AutoSize = true;
-            this.LabeledMarkersCheckBox.Location = new System.Drawing.Point(217, 40);
+            this.LabeledMarkersCheckBox.Location = new System.Drawing.Point(217, 30);
             this.LabeledMarkersCheckBox.Name = "LabeledMarkersCheckBox";
             this.LabeledMarkersCheckBox.Size = new System.Drawing.Size(64, 17);
             this.LabeledMarkersCheckBox.TabIndex = 30;
@@ -499,7 +524,7 @@ namespace WinFormTestApp
             // PollCheckBox
             // 
             this.PollCheckBox.AutoSize = true;
-            this.PollCheckBox.Location = new System.Drawing.Point(217, 17);
+            this.PollCheckBox.Location = new System.Drawing.Point(217, 10);
             this.PollCheckBox.Name = "PollCheckBox";
             this.PollCheckBox.Size = new System.Drawing.Size(43, 17);
             this.PollCheckBox.TabIndex = 4;
@@ -644,6 +669,8 @@ namespace WinFormTestApp
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.CommandButton);
+            this.tabPage2.Controls.Add(this.CommandText);
             this.tabPage2.Controls.Add(this.GetModeButton);
             this.tabPage2.Controls.Add(this.GetTakeRangeButton);
             this.tabPage2.Controls.Add(this.TestButton);
@@ -666,31 +693,48 @@ namespace WinFormTestApp
             this.tabPage2.Text = "Commands";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // CommandButton
+            // 
+            this.CommandButton.Location = new System.Drawing.Point(11, 70);
+            this.CommandButton.Name = "CommandButton";
+            this.CommandButton.Size = new System.Drawing.Size(149, 23);
+            this.CommandButton.TabIndex = 14;
+            this.CommandButton.Text = "Command";
+            this.CommandButton.UseVisualStyleBackColor = true;
+            this.CommandButton.Click += new System.EventHandler(this.CommandButton_Click);
+            // 
+            // CommandText
+            // 
+            this.CommandText.Location = new System.Drawing.Point(166, 72);
+            this.CommandText.Name = "CommandText";
+            this.CommandText.Size = new System.Drawing.Size(183, 20);
+            this.CommandText.TabIndex = 15;
+            // 
             // GetModeButton
             // 
-            this.GetModeButton.Location = new System.Drawing.Point(228, 165);
+            this.GetModeButton.Location = new System.Drawing.Point(296, 137);
             this.GetModeButton.Name = "GetModeButton";
-            this.GetModeButton.Size = new System.Drawing.Size(98, 23);
+            this.GetModeButton.Size = new System.Drawing.Size(62, 23);
             this.GetModeButton.TabIndex = 13;
-            this.GetModeButton.Text = "Capture Mode?";
+            this.GetModeButton.Text = "Mode?";
             this.GetModeButton.UseVisualStyleBackColor = true;
             this.GetModeButton.Click += new System.EventHandler(this.GetModeButton_Click);
             // 
             // GetTakeRangeButton
             // 
-            this.GetTakeRangeButton.Location = new System.Drawing.Point(122, 165);
+            this.GetTakeRangeButton.Location = new System.Drawing.Point(296, 166);
             this.GetTakeRangeButton.Name = "GetTakeRangeButton";
-            this.GetTakeRangeButton.Size = new System.Drawing.Size(99, 23);
+            this.GetTakeRangeButton.Size = new System.Drawing.Size(62, 23);
             this.GetTakeRangeButton.TabIndex = 12;
-            this.GetTakeRangeButton.Text = "Get Range";
+            this.GetTakeRangeButton.Text = "Range?";
             this.GetTakeRangeButton.UseVisualStyleBackColor = true;
             this.GetTakeRangeButton.Click += new System.EventHandler(this.GetTakeRangeButton_Click);
             // 
             // TestButton
             // 
-            this.TestButton.Location = new System.Drawing.Point(227, 136);
+            this.TestButton.Location = new System.Drawing.Point(227, 137);
             this.TestButton.Name = "TestButton";
-            this.TestButton.Size = new System.Drawing.Size(99, 23);
+            this.TestButton.Size = new System.Drawing.Size(63, 23);
             this.TestButton.TabIndex = 10;
             this.TestButton.Text = "Test";
             this.TestButton.UseVisualStyleBackColor = true;
@@ -698,11 +742,11 @@ namespace WinFormTestApp
             // 
             // GetLastFrameOfDataButton
             // 
-            this.GetLastFrameOfDataButton.Location = new System.Drawing.Point(11, 165);
+            this.GetLastFrameOfDataButton.Location = new System.Drawing.Point(227, 166);
             this.GetLastFrameOfDataButton.Name = "GetLastFrameOfDataButton";
-            this.GetLastFrameOfDataButton.Size = new System.Drawing.Size(99, 23);
+            this.GetLastFrameOfDataButton.Size = new System.Drawing.Size(63, 23);
             this.GetLastFrameOfDataButton.TabIndex = 11;
-            this.GetLastFrameOfDataButton.Text = "Get Frame";
+            this.GetLastFrameOfDataButton.Text = "Frame?";
             this.GetLastFrameOfDataButton.UseVisualStyleBackColor = true;
             this.GetLastFrameOfDataButton.Click += new System.EventHandler(this.GetLastFrameOfDataButton_Click);
             // 
@@ -725,7 +769,7 @@ namespace WinFormTestApp
             // 
             // StopRecordButton
             // 
-            this.StopRecordButton.Location = new System.Drawing.Point(122, 74);
+            this.StopRecordButton.Location = new System.Drawing.Point(122, 104);
             this.StopRecordButton.Name = "StopRecordButton";
             this.StopRecordButton.Size = new System.Drawing.Size(99, 23);
             this.StopRecordButton.TabIndex = 5;
@@ -752,7 +796,7 @@ namespace WinFormTestApp
             // 
             // TimelineStopButton
             // 
-            this.TimelineStopButton.Location = new System.Drawing.Point(122, 136);
+            this.TimelineStopButton.Location = new System.Drawing.Point(122, 166);
             this.TimelineStopButton.Name = "TimelineStopButton";
             this.TimelineStopButton.Size = new System.Drawing.Size(99, 23);
             this.TimelineStopButton.TabIndex = 9;
@@ -762,7 +806,7 @@ namespace WinFormTestApp
             // 
             // LiveModeButton
             // 
-            this.LiveModeButton.Location = new System.Drawing.Point(11, 105);
+            this.LiveModeButton.Location = new System.Drawing.Point(11, 135);
             this.LiveModeButton.Name = "LiveModeButton";
             this.LiveModeButton.Size = new System.Drawing.Size(99, 23);
             this.LiveModeButton.TabIndex = 6;
@@ -772,7 +816,7 @@ namespace WinFormTestApp
             // 
             // RecordButton
             // 
-            this.RecordButton.Location = new System.Drawing.Point(11, 74);
+            this.RecordButton.Location = new System.Drawing.Point(11, 104);
             this.RecordButton.Name = "RecordButton";
             this.RecordButton.Size = new System.Drawing.Size(99, 23);
             this.RecordButton.TabIndex = 4;
@@ -782,7 +826,7 @@ namespace WinFormTestApp
             // 
             // EditModeButton
             // 
-            this.EditModeButton.Location = new System.Drawing.Point(122, 105);
+            this.EditModeButton.Location = new System.Drawing.Point(122, 135);
             this.EditModeButton.Name = "EditModeButton";
             this.EditModeButton.Size = new System.Drawing.Size(99, 23);
             this.EditModeButton.TabIndex = 7;
@@ -792,7 +836,7 @@ namespace WinFormTestApp
             // 
             // TimelinePlayButton
             // 
-            this.TimelinePlayButton.Location = new System.Drawing.Point(11, 136);
+            this.TimelinePlayButton.Location = new System.Drawing.Point(11, 166);
             this.TimelinePlayButton.Name = "TimelinePlayButton";
             this.TimelinePlayButton.Size = new System.Drawing.Size(99, 23);
             this.TimelinePlayButton.TabIndex = 8;
@@ -916,16 +960,6 @@ namespace WinFormTestApp
             this.panel1.Size = new System.Drawing.Size(998, 474);
             this.panel1.TabIndex = 22;
             // 
-            // RadioBroadcast
-            // 
-            this.RadioBroadcast.AutoSize = true;
-            this.RadioBroadcast.Location = new System.Drawing.Point(197, 73);
-            this.RadioBroadcast.Name = "RadioBroadcast";
-            this.RadioBroadcast.Size = new System.Drawing.Size(73, 17);
-            this.RadioBroadcast.TabIndex = 31;
-            this.RadioBroadcast.Text = "Broadcast";
-            this.RadioBroadcast.UseVisualStyleBackColor = true;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1029,6 +1063,9 @@ namespace WinFormTestApp
         private System.Windows.Forms.DataGridViewTextBoxColumn TotalLatency;
         private System.Windows.Forms.DataGridViewTextBoxColumn Ping;
         private System.Windows.Forms.RadioButton RadioBroadcast;
+        private System.Windows.Forms.Button CommandButton;
+        private System.Windows.Forms.TextBox CommandText;
+        private System.Windows.Forms.CheckBox SubscribeOnlyCheckBox;
     }
 }
 

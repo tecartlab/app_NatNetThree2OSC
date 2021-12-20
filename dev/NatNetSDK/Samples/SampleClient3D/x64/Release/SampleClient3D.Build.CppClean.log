@@ -1,4 +1,4 @@
-m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\vc140.pdb
+m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\vc142.pdb
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\sampleclient3d.obj
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\rigidbodycollection.obj
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\opengldrawingfunctions.obj
@@ -6,10 +6,10 @@ m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\natutils.obj
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\markerpositioncollection.obj
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\glprint.obj
 m:\npoint\apps\natnet\natnetsdk\samples\bin\x64\sampleclient3d.exe
-m:\npoint\apps\natnet\natnetsdk\samples\bin\x64\sampleclient3d.ipdb
-m:\npoint\apps\natnet\natnetsdk\samples\bin\x64\sampleclient3d.iobj
 m:\npoint\apps\natnet\natnetsdk\samples\bin\x64\sampleclient3d.pdb
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\sampleclient3d.res
+m:\npoint\apps\natnet\natnetsdk\samples\bin\x64\sampleclient3d.ipdb
+m:\npoint\apps\natnet\natnetsdk\samples\bin\x64\sampleclient3d.iobj
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\..\bin\x64\sampleclient3d.exe
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\sampleclient3d.tlog\cl.command.1.tlog
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\sampleclient3d.tlog\cl.read.1.tlog
@@ -20,3 +20,4 @@ m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\sampleclient3
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\sampleclient3d.tlog\rc.command.1.tlog
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\sampleclient3d.tlog\rc.read.1.tlog
 m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\sampleclient3d.tlog\rc.write.1.tlog
+m:\npoint\apps\natnet\natnetsdk\samples\sampleclient3d\x64\release\sampleclient3d.tlog\sampleclient3d.write.1u.tlog

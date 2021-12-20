@@ -152,22 +152,22 @@ void OpenGLDrawingFunctions::DrawBox(GLfloat x, GLfloat y, GLfloat z, GLfloat qx
 
 void OpenGLDrawingFunctions::DrawCube(float scale)
 {
-    const float sizex = 0.5f * scale;
-    const float sizey = 0.5f * scale;
-    const float sizez = 0.5f * scale;
+    const float sizex = 0.4f * scale;
+    const float sizey = 0.4f * scale;
+    const float sizez = 0.4f * scale;
 
     glBegin(GL_QUADS);
 
     // FRONT
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glNormal3f(0.0f, 0.0f, 1.0f);
+    glColor3f(0.0f, 0.5294f, 1.0f);
+    glNormal3f(0.0f, 0.5294f, 1.0f);
     glVertex3f(-sizex, -sizey, sizez);
     glVertex3f(sizex, -sizey, sizez);
     glVertex3f(sizex, sizey, sizez);
     glVertex3f(-sizex, sizey, sizez);
 
     // BACK
-    glNormal3f(0.0f ,0.0f, 1.0f);
+    glNormal3f(0.0f, 0.5294f, 1.0f);
     glVertex3f(-sizex, -sizey, -sizez);
     glVertex3f(-sizex, sizey, -sizez);
     glVertex3f(sizex, sizey, -sizez);

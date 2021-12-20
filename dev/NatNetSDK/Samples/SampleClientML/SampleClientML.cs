@@ -56,23 +56,72 @@ namespace SampleClientML
 
 
         /*  List for saving each of datadescriptors */
-        private static List<NatNetML.DataDescriptor> mDataDescriptor = new List<NatNetML.DataDescriptor>(); 
+        private static List<NatNetML.DataDescriptor> mDataDescriptor = new List<NatNetML.DataDescriptor>();
 
         /*  Lists and Hashtables for saving data descriptions   */
         private static Hashtable mHtSkelRBs = new Hashtable();
         private static List<RigidBody> mRigidBodies = new List<RigidBody>();
         private static List<Skeleton> mSkeletons = new List<Skeleton>();
         private static List<ForcePlate> mForcePlates = new List<ForcePlate>();
+        private static List<Device> mDevices = new List<Device>();
+        private static List<Camera> mCameras = new List<Camera>();
 
         /*  boolean value for detecting change in asset */
         private static bool mAssetChanged = false;
 
 
-        static void Main()
+        static void Main(string[] args)
         {
-            Console.WriteLine("SampleClientML managed client application starting...\n");
+            bool debug = true;
+            string strLocalIP = "127.0.0.1";   // Local IP address (string)
+            string strServerIP = "127.0.0.1";  // Server IP address (string)
+            NatNetML.ConnectionType connectionType = ConnectionType.Multicast; // Multicast or Unicast mode
+
+        Console.WriteLine("SampleClientML managed client application starting...\n");
+            if (args.Length == 0)
+            {
+                Console.WriteLine("  command line options: \n");
+                Console.WriteLine("  SampleClientML [server_ip_address [client_ip_address [Unicast/Multicast]]] \n");
+                Console.WriteLine("  Examples: \n");
+                Console.WriteLine("    SampleClientML 127.0.0.1 127.0.0.1 Unicast \n");
+                Console.WriteLine("    SampleClientML 127.0.0.1 127.0.0.1 m \n");
+                Console.WriteLine("\n");
+            }
+            else
+            {
+                strServerIP = args[0];
+                if(args.Length > 1)
+                {
+                    strLocalIP = args[1];
+                    if (args.Length > 2)
+                    {
+                        connectionType = ConnectionType.Multicast; // Multicast or Unicast mode
+                        string res = args[2].Substring(0, 1);
+                        string res2 = res.ToLower();
+                        if (res2 == "u")
+                        {
+                            connectionType = ConnectionType.Unicast;
+                        }
+                    }
+                }
+            }
+            if (debug == true)
+            {
+                string cmdline = "SampleClientML " + strServerIP + " " + strLocalIP + " ";
+                if (connectionType == ConnectionType.Multicast)
+                {
+                    cmdline += "Multicast";
+                }
+                else
+                {
+                    cmdline += "Unicast";
+                }
+                Console.WriteLine("Using: " + cmdline + "\n");
+            }
             /*  [NatNet] Initialize client object and connect to the server  */
-            connectToServer();                          // Initialize a NatNetClient object and connect to a server.
+            // Initialize a NatNetClient object and connect to a server.
+            connectToServer(strServerIP, strLocalIP, connectionType);
+
 
             Console.WriteLine("============================ SERVER DESCRIPTOR ================================\n");
             /*  [NatNet] Confirming Server Connection. Instantiate the server descriptor object and obtain the server description. */
@@ -89,7 +138,7 @@ namespace SampleClientML
 
                 /*  [NatNet] Assigning a event handler function for fetching frame data each time a frame is received   */
                 mNatNet.OnFrameReady += new NatNetML.FrameReadyEventHandler(fetchFrameData);
-               
+
                 Console.WriteLine("Success: Data Port Connected \n");
 
                 Console.WriteLine("======================== STREAMING IN (PRESS ESC TO EXIT) =====================\n");
@@ -155,14 +204,14 @@ namespace SampleClientML
             /*  Exception handler for cases where assets are added or removed.
                 Data description is re-obtained in the main function so that contents
                 in the frame handler is kept minimal. */
-            if (( data.bTrackingModelsChanged == true || data.nRigidBodies != mRigidBodies.Count || data.nSkeletons != mSkeletons.Count || data.nForcePlates != mForcePlates.Count))
+            if ((data.bTrackingModelsChanged == true || data.nRigidBodies != mRigidBodies.Count || data.nSkeletons != mSkeletons.Count || data.nForcePlates != mForcePlates.Count))
             {
                 mAssetChanged = true;
             }
 
             /*  Processing and ouputting frame data every 200th frame.
                 This conditional statement is included in order to simplify the program output */
-            if(data.iFrame % 200 == 0)
+            if (data.iFrame % 100 == 0)
             {
                 if (data.bRecording == false)
                     Console.WriteLine("Frame #{0} Received:", data.iFrame);
@@ -182,7 +231,7 @@ namespace SampleClientML
 
                 for (int j = 0; j < data.nRigidBodies; j++)
                 {
-                    if(rbID == data.RigidBodies[j].ID)      // When rigid body ID of the descriptions matches rigid body ID of the frame data.
+                    if (rbID == data.RigidBodies[j].ID)      // When rigid body ID of the descriptions matches rigid body ID of the frame data.
                     {
                         NatNetML.RigidBody rb = mRigidBodies[i];                // Saved rigid body descriptions
                         NatNetML.RigidBodyData rbData = data.RigidBodies[j];    // Received rigid body descriptions
@@ -246,7 +295,7 @@ namespace SampleClientML
                     }
                 }
             }
-            
+
             /*  Parsing Force Plate Frame Data  */
             for (int i = 0; i < mForcePlates.Count; i++)
             {
@@ -272,7 +321,7 @@ namespace SampleClientML
             Console.WriteLine("\n");
         }
 
-        static void connectToServer()
+        static void connectToServer(string serverIPAddress, string localIPAddress, NatNetML.ConnectionType connectionType)
         {
             /*  [NatNet] Instantiate the client object  */
             mNatNet = new NatNetML.NatNetClientML();
@@ -283,13 +332,19 @@ namespace SampleClientML
             Console.WriteLine("NatNet SDK Version: {0}.{1}.{2}.{3}", verNatNet[0], verNatNet[1], verNatNet[2], verNatNet[3]);
 
             /*  [NatNet] Connecting to the Server    */
-            Console.WriteLine("\nConnecting...\n\tLocal IP address: {0}\n\tServer IP Address: {1}\n\n", mStrLocalIP, mStrServerIP);
 
             NatNetClientML.ConnectParams connectParams = new NatNetClientML.ConnectParams();
-            connectParams.ConnectionType = mConnectionType;
-            connectParams.ServerAddress = mStrServerIP;
-            connectParams.LocalAddress = mStrLocalIP;
-            mNatNet.Connect( connectParams );
+            connectParams.ConnectionType = connectionType;
+            connectParams.ServerAddress = serverIPAddress;
+            connectParams.LocalAddress = localIPAddress;
+
+            Console.WriteLine("\nConnecting...");
+            Console.WriteLine("\tServer IP Address: {0}", serverIPAddress);
+            Console.WriteLine("\tLocal IP address : {0}", localIPAddress);
+            Console.WriteLine("\tConnection Type  : {0}", connectionType);
+            Console.WriteLine("\n");
+
+            mNatNet.Connect(connectParams);
         }
 
         static bool fetchServerDescriptor()
@@ -314,15 +369,15 @@ namespace SampleClientML
         static void parseSeverDescriptor(NatNetML.ServerDescription server)
         {
             Console.WriteLine("Server Info:");
-            Console.WriteLine("\tHost: {0}", server.HostComputerName);
-            Console.WriteLine("\tApplication Name: {0}", server.HostApp);
+            Console.WriteLine("\tHost               : {0}", server.HostComputerName);
+            Console.WriteLine("\tApplication Name   : {0}", server.HostApp);
             Console.WriteLine("\tApplication Version: {0}.{1}.{2}.{3}", server.HostAppVersion[0], server.HostAppVersion[1], server.HostAppVersion[2], server.HostAppVersion[3]);
-            Console.WriteLine("\tNatNet Version: {0}.{1}.{2}.{3}\n", server.NatNetVersion[0], server.NatNetVersion[1], server.NatNetVersion[2], server.NatNetVersion[3]);
+            Console.WriteLine("\tNatNet Version     : {0}.{1}.{2}.{3}\n", server.NatNetVersion[0], server.NatNetVersion[1], server.NatNetVersion[2], server.NatNetVersion[3]);
         }
 
         static void fetchDataDescriptor()
         {
-            /*  [NatNet] Fetch Data Descriptions. Instantiate objects for saving data descriptions and frame data    */        
+            /*  [NatNet] Fetch Data Descriptions. Instantiate objects for saving data descriptions and frame data    */
             bool result = mNatNet.GetDataDescriptions(out mDataDescriptor);
             if (result)
             {
@@ -349,13 +404,13 @@ namespace SampleClientML
                 // Parse Data Descriptions for each data sets and save them in the delcared lists and hashtables for later uses.
                 switch (dataSetType)
                 {
-                    case ((int) NatNetML.DataDescriptorType.eMarkerSetData):
+                    case ((int)NatNetML.DataDescriptorType.eMarkerSetData):
                         NatNetML.MarkerSet mkset = (NatNetML.MarkerSet)description[i];
                         Console.WriteLine("\tMarkerSet ({0})", mkset.Name);
                         break;
 
 
-                    case ((int) NatNetML.DataDescriptorType.eRigidbodyData):
+                    case ((int)NatNetML.DataDescriptorType.eRigidbodyData):
                         NatNetML.RigidBody rb = (NatNetML.RigidBody)description[i];
                         Console.WriteLine("\tRigidBody ({0})", rb.Name);
 
@@ -364,7 +419,7 @@ namespace SampleClientML
                         break;
 
 
-                    case ((int) NatNetML.DataDescriptorType.eSkeletonData):
+                    case ((int)NatNetML.DataDescriptorType.eSkeletonData):
                         NatNetML.Skeleton skl = (NatNetML.Skeleton)description[i];
                         Console.WriteLine("\tSkeleton ({0}), Bones:", skl.Name);
 
@@ -383,22 +438,45 @@ namespace SampleClientML
                         break;
 
 
-                    case ((int) NatNetML.DataDescriptorType.eForcePlateData):
+                    case ((int)NatNetML.DataDescriptorType.eForcePlateData):
                         NatNetML.ForcePlate fp = (NatNetML.ForcePlate)description[i];
                         Console.WriteLine("\tForcePlate ({0})", fp.Serial);
 
                         // Saving Force Plate Channel Names
                         mForcePlates.Add(fp);
-               
+
                         for (int j = 0; j < fp.ChannelCount; j++)
                         {
                             Console.WriteLine("\t\tChannel {0}: {1}", j + 1, fp.ChannelNames[j]);
                         }
                         break;
 
+                    case ((int)NatNetML.DataDescriptorType.eDeviceData):
+                        NatNetML.Device dd = (NatNetML.Device)description[i];
+                        Console.WriteLine("\tDeviceData ({0})", dd.Serial);
+
+                        // Saving Device Data Channel Names
+                        mDevices.Add(dd);
+
+                        for (int j = 0; j < dd.ChannelCount; j++)
+                        {
+                            Console.WriteLine("\t\tChannel {0}: {1}", j + 1, dd.ChannelNames[j]);
+                        }
+                        break;
+
+                    case ((int)NatNetML.DataDescriptorType.eCameraData):
+                        // Saving Camera Names
+                        NatNetML.Camera camera = (NatNetML.Camera)description[i];
+                        Console.WriteLine("\tCamera: ({0})", camera.Name);
+
+                        // Saving Force Plate Channel Names
+                        mCameras.Add(camera);
+                        break;
+
+
                     default:
                         // When a Data Set does not match any of the descriptions provided by the SDK.
-                        Console.WriteLine("\tError: Invalid Data Set");
+                        Console.WriteLine("\tError: Invalid Data Set - dataSetType = " + dataSetType);
                         break;
                 }
             }
@@ -408,7 +486,7 @@ namespace SampleClientML
         {
             return dRads * (180.0f / Math.PI);
         }
-        
+
         static int LowWord(int number)
         {
             return number & 0xFFFF;

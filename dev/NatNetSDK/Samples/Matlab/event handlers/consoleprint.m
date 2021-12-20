@@ -1,9 +1,4 @@
 function consoleprint( ~ , evnt )
-	for i = 1:76
-		fprintf( '\b' )
-	end
-	fprintf( '\n' )
-
 	% the input argument, evnt, is a c structure half converted into a
 	% matlab structure.
 	data = evnt.data;
@@ -20,15 +15,16 @@ function consoleprint( ~ , evnt )
 	eulery = a( 2 ) * -180.0 / pi;
 	eulerz = a( 3 ) * 180.0 / pi;
 	
-	% print the data to the command window
-	fprintf( 'Frame:%5d ' , evnt.data.iFrame )
+	% print the data to the command window for every 100th frame
+    if (rem(evnt.data.iFrame,200) == 0)
+        fprintf( 'Frame #%5d (Rigid Body ID:%1d)\n', evnt.data.iFrame ,data.RigidBodies(rbnum).ID);
 
-	fprintf( 'X:%0.1fmm ', data.RigidBodies( rbnum ).x * 1000 )
-	fprintf( 'Y:%0.1fmm ', data.RigidBodies( rbnum ).y * 1000 )
-	fprintf( 'Z:%0.1fmm ', data.RigidBodies( rbnum ).z * 1000 )
-	
-	fprintf( 'Pitch:%0.1f ', eulerx )
-	fprintf( 'Yaw:%0.1f ', eulery )
-	fprintf( 'Roll:%0.1f ', eulerz )
+        fprintf( '\tX:%0.1fmm ', data.RigidBodies( rbnum ).x * 1000 );
+        fprintf( '\tY:%0.1fmm ', data.RigidBodies( rbnum ).y * 1000 );
+        fprintf( '\tZ:%0.1fmm\n', data.RigidBodies( rbnum ).z * 1000 );
 
+        fprintf( '\tPitch:%0.1f ', eulerx );
+        fprintf( '\tYaw:%0.1f ', eulery );
+        fprintf( '\tRoll:%0.1f\n', eulerz );
+    end
 end
