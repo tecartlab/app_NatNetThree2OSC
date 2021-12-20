@@ -133,6 +133,17 @@ NatNetClientML encapsulates all functionality required to receive data
 from a NatNet Server application, Motive.
 </summary>
         </member>
+        <member name="F:NatNetML.NatNetPacket.Payload">
+            <summary>Message payload.</summary>
+        </member>
+        <member name="F:NatNetML.NatNetPacket.MessageId">
+            <summary>Message type.</summary>
+        </member>
+        <member name="T:NatNetML.NatNetPacket">
+            <summary>
+A NatNet message packet.
+</summary>
+        </member>
         <member name="F:NatNetML.ServerDescription.ConnectionMulticastAddress">
             <summary>The multicast group address to use for a multicast connection.</summary>
         </member>
@@ -368,6 +379,35 @@ Recorded optical marker data for a single Markerset (MarkerSet, RigidBody, Skele
         <member name="T:NatNetML.Skeleton">
             <summary>
 Describes a Skeleton 
+</summary>
+        </member>
+        <member name="F:NatNetML.Camera.qw">
+            <summary>Camera Ori W</summary>
+        </member>
+        <member name="F:NatNetML.Camera.qz">
+            <summary>Camera Ori Z</summary>
+        </member>
+        <member name="F:NatNetML.Camera.qy">
+            <summary>Camera Ori Y</summary>
+        </member>
+        <member name="F:NatNetML.Camera.qx">
+            <summary>Camera Ori X</summary>
+        </member>
+        <member name="F:NatNetML.Camera.z">
+            <summary>Camera Pos Z</summary>
+        </member>
+        <member name="F:NatNetML.Camera.y">
+            <summary>Camera Pos Y</summary>
+        </member>
+        <member name="F:NatNetML.Camera.x">
+            <summary>Camera Pos X</summary>
+        </member>
+        <member name="F:NatNetML.Camera.Name">
+            <summary>App defined name for the Camera</summary>
+        </member>
+        <member name="T:NatNetML.Camera">
+            <summary>
+Describes a Camera with position and orientation
 </summary>
         </member>
         <member name="F:NatNetML.Device.ChannelNames">
