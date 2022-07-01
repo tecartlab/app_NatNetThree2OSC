@@ -111,6 +111,9 @@ namespace NatNetThree2OSC
         [Option("bundled", Required = false, Default = false, HelpText = "bundle the frame messages")]
         public bool mBundled { get; set; }
 
+        [Option("autoReconnect", Required = false, Default = false, HelpText = "auto reconnect to motive if streaming stops")]
+        public bool mAutoReconnect { get; set; }
+
         [Option("verbose", Required = false, Default = false, HelpText = "verbose mode")]
         public bool mVerbose { get; set; }
 
@@ -144,11 +147,14 @@ namespace NatNetThree2OSC
         private static bool mBundled = false;
         private static int mDataStreamInfo = 0;
         private static int mFrameModulo = 0;
+        private static bool mAutoReconnect = false;
 
         private static Int16 mProxyHS_data = 0;
         private static Int16 mProxyHS_ctrl = 0;
 
         private static Int16 mProxyHS_frameCounter = 0;
+        private static float mProxyHS_fps = -1;
+        private static bool gotData = false;
 
         private static bool mMatrix = false;
         private static bool mInvMatrix = false;
@@ -202,8 +208,8 @@ namespace NatNetThree2OSC
         {
             while (true)
             {
-                float fps = (float)mProxyHS_frameCounter / (float)mDataStreamInfo * 1000.0f;
-                Console.WriteLine("streaminfo {0} {1} {2}", mProxyHS_data, mProxyHS_ctrl, fps);
+                mProxyHS_fps = (float)mProxyHS_frameCounter / (float)mDataStreamInfo * 1000.0f;
+                Console.WriteLine("streaminfo {0} {1} {2}", mProxyHS_data, mProxyHS_ctrl, mProxyHS_fps);
                 mProxyHS_data = 0;
                 mProxyHS_ctrl = 0;
                 mProxyHS_frameCounter = 0;
@@ -224,6 +230,7 @@ namespace NatNetThree2OSC
             mSendSkeletons = opts.mySendSkeletons;
             mSendMarkerInfo = opts.mySendMarkerInfo;
             mVerbose = opts.mVerbose;
+            mAutoReconnect = opts.mAutoReconnect;
             mBundled = opts.mBundled;
             mDataStreamInfo = opts.mDataStreamInfo;
             mFrameModulo = opts.mFrameModulo;
@@ -231,8 +238,8 @@ namespace NatNetThree2OSC
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
 
-            Console.WriteLine("\n---- NatNetThree2OSC v. 8.7.1  ----");
-            Console.WriteLine("\n----    20210531 by maybites   ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 8.8.0  ----");
+            Console.WriteLine("\n----    20220701 by maybites   ----");
 
             Console.WriteLine("\nNatNetThree2OSC");
             Console.WriteLine("\t oscSendIP = \t\t({0:N3})", opts.mStrOscSendIP);
@@ -253,6 +260,7 @@ namespace NatNetThree2OSC
             Console.WriteLine("\t motiveCmdPort = \t({0})", opts.mIntMotiveCmdPort);
             Console.WriteLine("\t dataStreamInfo = \t[{0}]", opts.mDataStreamInfo);
             Console.WriteLine("\t frameModulo = \t\t[{0}]", opts.mFrameModulo);
+            Console.WriteLine("\t autoReconnect = \t\t[{0}]", opts.mAutoReconnect);
             Console.WriteLine("\t verbose = \t\t[{0}]", opts.mVerbose);
 
             // The cabllback function for receiveing OSC messages
@@ -338,6 +346,14 @@ namespace NatNetThree2OSC
                     {
                         mVerbose = ((int)messageReceived.Arguments[0] == 1) ? true : false;
                         Console.WriteLine("received /verbose " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/autoReconnect"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mAutoReconnect = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /autoReconnect " + messageReceived.Arguments[0]);
                     }
                 }
                 else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/bundled"))
@@ -444,6 +460,13 @@ namespace NatNetThree2OSC
                     Console.WriteLine("===============================================================================\n");
                     mAssetChanged = false;
                 }
+                // If the StreamInfoThread detects no new frames, the script attempts to reconnect to motive
+                if(mAutoReconnect && gotData && mProxyHS_fps == 0)
+                {
+                    gotData = false;
+                    mProxyHS_fps = -1;
+                    reconnectToServer(opts);
+                }
             }
             /*  [NatNet] Disabling data handling function   */
             mNatNet.OnFrameReady -= fetchFrameData;
@@ -492,6 +515,7 @@ namespace NatNetThree2OSC
             else if (data.iFrame % mFrameModulo == 0)
             {
                 mProxyHS_frameCounter++;
+                gotData = true;
 
                 int myTimestamp = (int)((Int64)(data.fTimestamp * 1000f) % 86400000);
                 /*  Processing and ouputting frame data every 200th frame.
@@ -947,6 +971,29 @@ namespace NatNetThree2OSC
             connectParams.ServerDataPort = (ushort)opts.mIntMotiveDataPort;
             connectParams.ServerCommandPort = (ushort)opts.mIntMotiveCmdPort;
             mNatNet.Connect( connectParams );
+        }
+
+        static void reconnectToServer(Options opts)
+        {
+            /*  [NatNet] Checking verions of the NatNet SDK library  */
+            int[] verNatNet = new int[4];           // Saving NatNet SDK version number
+            verNatNet = mNatNet.NatNetVersion();
+            Console.WriteLine("NatNet SDK Version: {0}.{1}.{2}.{3}", verNatNet[0], verNatNet[1], verNatNet[2], verNatNet[3]);
+
+            /*  [NatNet] ReConnecting to the Server    */
+            Console.WriteLine("\nReConnecting...\n\tLocal IP address: {0}\n\tServer IP Address: {1}\n\n", opts.mStrLocalIP, opts.mStrServerIP);
+
+            mNatNet.Disconnect();
+
+            NatNetClientML.ConnectParams connectParams = new NatNetClientML.ConnectParams();
+            connectParams.ConnectionType = mConnectionType;
+            connectParams.ServerAddress = opts.mStrServerIP;
+            connectParams.LocalAddress = opts.mStrLocalIP;
+            connectParams.MulticastAddress = opts.mStrMultiCastIP;
+            connectParams.ServerDataPort = (ushort)opts.mIntMotiveDataPort;
+            connectParams.ServerCommandPort = (ushort)opts.mIntMotiveCmdPort;
+            mNatNet.Connect(connectParams);
+            Console.WriteLine("\n...ReConnected\n\n");
         }
 
         static bool fetchServerDescriptor()
