@@ -1,4 +1,4 @@
-NatNetThree2OSC 8.8.0
+NatNetThree2OSC 8.8.1
 ===================================
 
 
@@ -41,7 +41,7 @@ Usage: NatNetThree2OSC
 * **--matrix**            (Default: false) calculate and send the transformation matrix
 * **--invMatrix**         (Default: false) calculate and send the inverse transformation matrix
 * **--bundled**           (Default: false) send the frame message inside an osc bundle
-* **--autoReconnect**     (Default: false, only if **dataStreamInfo** is enabled) reconnect to motive when no data is received
+* **--autoReconnect**     (Default: false) reconnect to motive when no data is received
 * **--verbose**           (Default: false) verbose mode
 * **--help**              Display this help screen.
 * **--version**           Display version information.

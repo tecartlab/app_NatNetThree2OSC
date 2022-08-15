@@ -148,13 +148,15 @@ namespace NatNetThree2OSC
         private static int mDataStreamInfo = 0;
         private static int mFrameModulo = 0;
         private static bool mAutoReconnect = false;
+        private static Int16 mAutoReconnect_frameCounter = 0;
+        private static bool mAutoReconnect_noStream = false;
 
         private static Int16 mProxyHS_data = 0;
         private static Int16 mProxyHS_ctrl = 0;
 
         private static Int16 mProxyHS_frameCounter = 0;
         private static float mProxyHS_fps = -1;
-        private static bool gotData = false;
+        private static bool mAutoReconnect_gotData = false;
 
         private static bool mMatrix = false;
         private static bool mInvMatrix = false;
@@ -217,6 +219,22 @@ namespace NatNetThree2OSC
             }
         }
 
+        public static void AutoReconnectThread()
+        {
+            while (true)
+            {
+                //Console.WriteLine("\t mAutoReconnect_frameCounter = \t\t({0:N3})", mAutoReconnect_frameCounter);
+                if (mAutoReconnect_gotData)
+                {
+                    mAutoReconnect_noStream = mAutoReconnect_frameCounter <= 1;
+                    mAutoReconnect_frameCounter = 0;
+                    mAutoReconnect_gotData = false;
+                    //Console.WriteLine("\t mAutoReconnect_noStream = \t\t({0:N3})", mAutoReconnect_noStream);
+                }
+                Thread.Sleep(100);
+            }
+        }
+
         static void Run(Options opts)
         {
             mOscModeMax = (opts.mOscMode.Contains("max")) ? true : false;
@@ -238,8 +256,8 @@ namespace NatNetThree2OSC
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
 
-            Console.WriteLine("\n---- NatNetThree2OSC v. 8.8.0  ----");
-            Console.WriteLine("\n----    20220701 by maybites   ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 8.8.1  ----");
+            Console.WriteLine("\n----    20220815 by maybites   ----");
 
             Console.WriteLine("\nNatNetThree2OSC");
             Console.WriteLine("\t oscSendIP = \t\t({0:N3})", opts.mStrOscSendIP);
@@ -410,31 +428,18 @@ namespace NatNetThree2OSC
                 Console.WriteLine("streaminfo 0 0");
             }
 
+            if (mAutoReconnect)
+            {
+                var th = new Thread(AutoReconnectThread);
+                th.Start();
+                Console.WriteLine("AutoReconnectThread started");
+            }
+
             Console.WriteLine("\nNatNetThree2OSC managed client application starting...\n");
             /*  [NatNet] Initialize client object and connect to the server  */
             connectToServer(opts);                          // Initialize a NatNetClient object and connect to a server.
 
-            Console.WriteLine("============================ SERVER DESCRIPTOR ================================\n");
-            /*  [NatNet] Confirming Server Connection. Instantiate the server descriptor object and obtain the server description. */
-            bool connectionConfirmed = fetchServerDescriptor();    // To confirm connection, request server description data
-
-            if (connectionConfirmed)                         // Once the connection is confirmed.
-            {
-                Console.WriteLine("============================= DATA DESCRIPTOR =================================\n");
-                Console.WriteLine("Now Fetching the Data Descriptor.\n");
-                fetchDataDescriptor();                  //Fetch and parse data descriptor
-
-                Console.WriteLine("============================= FRAME OF DATA ===================================\n");
-                Console.WriteLine("Now Fetching the Frame Data\n");
-
-                /*  [NatNet] Assigning a event handler function for fetching frame data each time a frame is received   */
-                mNatNet.OnFrameReady += new NatNetML.FrameReadyEventHandler(fetchFrameData);
-               
-                Console.WriteLine("Success: Data Port Connected \n");
-
-                Console.WriteLine("======================== STREAMING IN (PRESS ESC TO EXIT) =====================\n");
-            }
-
+            confirmConnection();
 
             while (true)
             {
@@ -461,11 +466,22 @@ namespace NatNetThree2OSC
                     mAssetChanged = false;
                 }
                 // If the StreamInfoThread detects no new frames, the script attempts to reconnect to motive
-                if(mAutoReconnect && gotData && mProxyHS_fps == 0)
+                if(mAutoReconnect && mAutoReconnect_noStream)
                 {
-                    gotData = false;
+                    /*  [NatNet] ReConnecting to the Server    */
+                    Console.WriteLine("\nReConnecting...\n\tLocal IP address: {0}\n\tServer IP Address: {1}\n\n", opts.mStrLocalIP, opts.mStrServerIP);
+
+                    /*  [NatNet] Disabling data handling function   */
+                    mNatNet.OnFrameReady -= fetchFrameData; 
+                    
                     mProxyHS_fps = -1;
                     reconnectToServer(opts);
+                    if (!confirmConnection()){
+                        break;
+                    } 
+                    Console.WriteLine("\n...ReConnected\n\n");
+
+                    mAutoReconnect_noStream = false;
                 }
             }
             /*  [NatNet] Disabling data handling function   */
@@ -480,6 +496,32 @@ namespace NatNetThree2OSC
             //listener.Close();
 
             OSCProxy.Close();
+        }
+
+
+        static bool confirmConnection()
+        {
+            Console.WriteLine("============================ SERVER DESCRIPTOR ================================\n");
+            /*  [NatNet] Confirming Server Connection. Instantiate the server descriptor object and obtain the server description. */
+            bool connectionConfirmed = fetchServerDescriptor();    // To confirm connection, request server description data
+
+            if (connectionConfirmed)                         // Once the connection is confirmed.
+            {
+                Console.WriteLine("============================= DATA DESCRIPTOR =================================\n");
+                Console.WriteLine("Now Fetching the Data Descriptor.\n");
+                fetchDataDescriptor();                  //Fetch and parse data descriptor
+
+                Console.WriteLine("============================= FRAME OF DATA ===================================\n");
+                Console.WriteLine("Now Fetching the Frame Data\n");
+
+                /*  [NatNet] Assigning a event handler function for fetching frame data each time a frame is received   */
+                mNatNet.OnFrameReady += new NatNetML.FrameReadyEventHandler(fetchFrameData);
+
+                Console.WriteLine("Success: Data Port Connected \n");
+
+                Console.WriteLine("======================== STREAMING IN (PRESS ESC TO EXIT) =====================\n");
+            }
+            return connectionConfirmed;
         }
 
         /// <summary>
@@ -515,7 +557,8 @@ namespace NatNetThree2OSC
             else if (data.iFrame % mFrameModulo == 0)
             {
                 mProxyHS_frameCounter++;
-                gotData = true;
+                mAutoReconnect_frameCounter++;
+                mAutoReconnect_gotData = true;
 
                 int myTimestamp = (int)((Int64)(data.fTimestamp * 1000f) % 86400000);
                 /*  Processing and ouputting frame data every 200th frame.
@@ -980,9 +1023,6 @@ namespace NatNetThree2OSC
             verNatNet = mNatNet.NatNetVersion();
             Console.WriteLine("NatNet SDK Version: {0}.{1}.{2}.{3}", verNatNet[0], verNatNet[1], verNatNet[2], verNatNet[3]);
 
-            /*  [NatNet] ReConnecting to the Server    */
-            Console.WriteLine("\nReConnecting...\n\tLocal IP address: {0}\n\tServer IP Address: {1}\n\n", opts.mStrLocalIP, opts.mStrServerIP);
-
             mNatNet.Disconnect();
 
             NatNetClientML.ConnectParams connectParams = new NatNetClientML.ConnectParams();
@@ -993,7 +1033,6 @@ namespace NatNetThree2OSC
             connectParams.ServerDataPort = (ushort)opts.mIntMotiveDataPort;
             connectParams.ServerCommandPort = (ushort)opts.mIntMotiveCmdPort;
             mNatNet.Connect(connectParams);
-            Console.WriteLine("\n...ReConnected\n\n");
         }
 
         static bool fetchServerDescriptor()
@@ -1100,8 +1139,11 @@ namespace NatNetThree2OSC
                         message = new OscMessage("/motive/rigidbody/id", rb.Name, rb.ID);
                         OSCProxy.Send(message);
 
-                        // Saving Rigid Body Descriptions
-                        mRigidBodies.Add(rb);
+                        if (!mRigidBodies.Contains(rb))
+                        {
+                            // Saving Rigid Body Descriptions
+                            mRigidBodies.Add(rb);
+                        }
                         break;
 
 
@@ -1112,8 +1154,11 @@ namespace NatNetThree2OSC
                         message = new OscMessage("/motive/skeleton/id", skl.Name, skl.ID);
                         OSCProxy.Send(message);
 
-                        //Saving Skeleton Descriptions
-                        mSkeletons.Add(skl);
+                        if (!mSkeletons.Contains(skl))
+                        {
+                            //Saving Skeleton Descriptions
+                            mSkeletons.Add(skl);
+                        }
 
                         // Saving Individual Bone Descriptions
                         for (int j = 0; j < skl.nRigidBodies; j++)
@@ -1124,7 +1169,10 @@ namespace NatNetThree2OSC
                             Console.WriteLine("\t\t{0}. {1}", skl.RigidBodies[j].ID, skl.RigidBodies[j].Name);
                             int uniqueID = skl.ID * 1000 + skl.RigidBodies[j].ID;
                             int key = uniqueID.GetHashCode();
-                            mHtSkelRBs.Add(key, skl.RigidBodies[j]); //Saving the bone segments onto the hashtable
+                            if (!mHtSkelRBs.Contains(key))
+                            {
+                                mHtSkelRBs.Add(key, skl.RigidBodies[j]); //Saving the bone segments onto the hashtable
+                            }
                         }
                         break;
 
