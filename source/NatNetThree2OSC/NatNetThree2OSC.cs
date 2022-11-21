@@ -90,8 +90,11 @@ namespace NatNetThree2OSC
         [Option("sendSkeletons", Required = false, Default = false, HelpText = "send skeleton data")]
         public bool mySendSkeletons { get; set; }
 
-        [Option("sendMarkerInfo", Required = false, Default = false, HelpText = "send skeleton data")]
+        [Option("sendMarkerInfo", Required = false, Default = false, HelpText = "send marker data")]
         public bool mySendMarkerInfo { get; set; }
+
+        [Option("sendOtherMarkerInfo", Required = false, Default = false, HelpText = "send other marker data")]
+        public bool mySendOtherMarkerInfo { get; set; }
 
         [Option("yup2zup", Required = false, Default = false, HelpText = "transform y-up to z-up")]
         public bool myUp2zUp { get; set; }
@@ -143,10 +146,11 @@ namespace NatNetThree2OSC
         private static bool mleftHanded = false;
         private static bool mSendSkeletons = false;
         private static bool mSendMarkerInfo = false;
+        private static bool mSendOtherMarkerInfo = false;
         private static bool mVerbose = false;
         private static bool mBundled = false;
         private static int mDataStreamInfo = 0;
-        private static int mFrameModulo = 0;
+        private static int mFrameModulo = 1;
         private static bool mAutoReconnect = false;
         private static Int16 mAutoReconnect_frameCounter = 0;
         private static bool mAutoReconnect_noStream = false;
@@ -231,7 +235,7 @@ namespace NatNetThree2OSC
                     mAutoReconnect_gotData = false;
                     //Console.WriteLine("\t mAutoReconnect_noStream = \t\t({0:N3})", mAutoReconnect_noStream);
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(100 * mFrameModulo);
             }
         }
 
@@ -247,6 +251,7 @@ namespace NatNetThree2OSC
             mleftHanded = opts.myleftHanded;
             mSendSkeletons = opts.mySendSkeletons;
             mSendMarkerInfo = opts.mySendMarkerInfo;
+            mSendOtherMarkerInfo = opts.mySendOtherMarkerInfo;
             mVerbose = opts.mVerbose;
             mAutoReconnect = opts.mAutoReconnect;
             mBundled = opts.mBundled;
@@ -256,8 +261,8 @@ namespace NatNetThree2OSC
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
 
-            Console.WriteLine("\n---- NatNetThree2OSC v. 8.8.1  ----");
-            Console.WriteLine("\n----    20220815 by maybites   ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 8.9.0  ----");
+            Console.WriteLine("\n----    20221121 by maybites   ----");
 
             Console.WriteLine("\nNatNetThree2OSC");
             Console.WriteLine("\t oscSendIP = \t\t({0:N3})", opts.mStrOscSendIP);
@@ -266,16 +271,17 @@ namespace NatNetThree2OSC
             Console.WriteLine("\t oscMode = \t\t[{0}]", string.Join(":", opts.mOscMode));
             Console.WriteLine("\t sendSkeletons = \t[{0}]", opts.mySendSkeletons);
             Console.WriteLine("\t sendMarkerInfo = \t[{0}]", opts.mySendMarkerInfo);
+            Console.WriteLine("\t sendOtherMarkerInfo = \t[{0}]", opts.mySendOtherMarkerInfo);
             Console.WriteLine("\t matrix = \t\t[{0}]", opts.mMatrix);
             Console.WriteLine("\t invMatrix = \t\t[{0}]", opts.mInvMatrix);
-            Console.WriteLine("\t yup2zup = \t\t[{0}]", opts.myUp2zUp);
-            Console.WriteLine("\t leftHanded = \t\t[{0}]", opts.myleftHanded);
             Console.WriteLine("\n");
             Console.WriteLine("\t localIP = \t\t({0:N3})", opts.mStrLocalIP);
             Console.WriteLine("\t motiveIP = \t\t({0:N3})", opts.mStrServerIP);
             Console.WriteLine("\t multiCastIP = \t\t({0:N3})", opts.mStrMultiCastIP);
             Console.WriteLine("\t motiveDataPort = \t({0})", opts.mIntMotiveDataPort);
             Console.WriteLine("\t motiveCmdPort = \t({0})", opts.mIntMotiveCmdPort);
+            Console.WriteLine("\t yup2zup = \t\t[{0}]", opts.myUp2zUp);
+            Console.WriteLine("\t leftHanded = \t\t[{0}]", opts.myleftHanded);
             Console.WriteLine("\t dataStreamInfo = \t[{0}]", opts.mDataStreamInfo);
             Console.WriteLine("\t frameModulo = \t\t[{0}]", opts.mFrameModulo);
             Console.WriteLine("\t autoReconnect = \t\t[{0}]", opts.mAutoReconnect);
@@ -356,6 +362,14 @@ namespace NatNetThree2OSC
                     {
                         mSendMarkerInfo = ((int)messageReceived.Arguments[0] == 1) ? true : false;
                         Console.WriteLine("received /sendMarkerInfo " + messageReceived.Arguments[0]);
+                    }
+                }
+                else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/sendOtherMarkerInfo"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        mSendOtherMarkerInfo = ((int)messageReceived.Arguments[0] == 1) ? true : false;
+                        Console.WriteLine("received /sendOtherMarkerInfo " + messageReceived.Arguments[0]);
                     }
                 }
                 else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/verbose"))
@@ -631,6 +645,60 @@ namespace NatNetThree2OSC
         {
 
             var message = new OscMessage("/marker");
+
+            /*  Parsing othermarker Frame Data   */
+
+            if (mSendOtherMarkerInfo == true)
+            {
+                int markerID = -1;
+
+                for (int j = 0; j < data.nOtherMarkers; j++)
+                {
+                    NatNetML.Marker rbData = data.OtherMarkers[j];    // Received marker descriptions
+
+                    markerID = rbData.ID;
+
+                    foreach (NatNetML.Marker mData in data.LabeledMarkers)
+                    { // search for labeled marker at the same pos and take their ID
+                        if (rbData.x == mData.x && rbData.x == mData.x && rbData.x == mData.x)
+                        {
+                            markerID = mData.ID;
+                            break;
+                        }
+                    }
+
+                    float pxt, pyt, pzt = 0.0f;
+                    if (mUpAxis == 1)
+                    {
+                        pxt = rbData.x;
+                        pyt = -rbData.z;
+                        pzt = rbData.y;
+                    }
+                    else
+                    {
+                        pxt = rbData.x;
+                        pyt = rbData.y;
+                        pzt = rbData.z;
+                    }
+
+                    if (mleftHanded)
+                    {
+                        pxt = -pxt;
+                    }
+
+                    if (mOscModeMax)
+                    {
+                        message = new OscMessage("/othermarker", markerID, "position", pxt, pyt, pzt);
+                        bundle.Add(message);
+                    }
+                    if (mOscModeIsa || mOscModeTouch)
+                    {
+                        message = new OscMessage("/othermarker/" + markerID + "/position", pxt, pyt, pzt);
+                        bundle.Add(message);
+                    }
+                }
+            }
+
             /*  Parsing marker Frame Data   */
 
             if (mSendMarkerInfo == true)
@@ -665,7 +733,7 @@ namespace NatNetThree2OSC
                     }
                     if (mOscModeIsa || mOscModeTouch)
                     {
-                        message = new OscMessage("/marker" + rbData.ID + "/position", pxt, pyt, pzt);
+                        message = new OscMessage("/marker/" + rbData.ID + "/position", pxt, pyt, pzt);
                         bundle.Add(message);
                     }
                 }
@@ -1099,6 +1167,8 @@ namespace NatNetThree2OSC
             message = new OscMessage("/script/sendSkeletons", mSendSkeletons);
             OSCProxy.Send(message);
             message = new OscMessage("/script/sendMarkerInfo", mSendMarkerInfo);
+            OSCProxy.Send(message);
+            message = new OscMessage("/script/sendOtherMarkerInfo", mSendOtherMarkerInfo);
             OSCProxy.Send(message);
             message = new OscMessage("/script/bundled", mBundled);
             OSCProxy.Send(message);

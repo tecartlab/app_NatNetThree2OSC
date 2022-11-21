@@ -1,4 +1,4 @@
-NatNetThree2OSC 8.8.1
+NatNetThree2OSC 8.9.0
 ===================================
 
 
@@ -23,28 +23,29 @@ Using The Application
 -----------------
 
 Usage: NatNetThree2OSC  
-* **--localIP**           Required. IP address of this machine.
-* **--motiveIP**          Required. IP address of the machine Motive is running on.
-* **--oscSendIP**         Required. IP-address or URL of the machine OSC data is sent to.
-* **--oscSendPort**       Required. receiving port of the machine OSC data is sent to.
-* **--oscCtrlPort**       (Default: 65111) local listening port to refetch descriptions.
-* **--oscMode**           (Default: max) OSC format (max, isadora, touch, sparck, ambi)
-* **--mulitCastIP**       (Default: 239.255.42.99) Multicast IP Motive is sending on.
-* **--motiveDataPort**    (Default: 1511) Motives data port
-* **--motiveCmdPort**     (Default: 1510) Motives command port
-* **--frameModulo**       (Default: 1) Frame reduction: Send every n-th frame
-* **--dataStreamInfo**    (Default: 0=off) sends each specified [ms] streaminfo message to the console.
-* **--sendSkeletons**     (Default: false) send skeleton data
-* **--sendMarkerInfo**    (Default: false) send marker info (position data)
-* **--yup2zup**           (Default: false) transform y-up to z-up
-* **--leftHanded**        (Default: false) transform right handed to left handed coordinate system
-* **--matrix**            (Default: false) calculate and send the transformation matrix
-* **--invMatrix**         (Default: false) calculate and send the inverse transformation matrix
-* **--bundled**           (Default: false) send the frame message inside an osc bundle
-* **--autoReconnect**     (Default: false) reconnect to motive when no data is received
-* **--verbose**           (Default: false) verbose mode
-* **--help**              Display this help screen.
-* **--version**           Display version information.
+* **--localIP**             Required. IP address of this machine.
+* **--motiveIP**            Required. IP address of the machine Motive is running on.
+* **--oscSendIP**           Required. IP-address or URL of the machine OSC data is sent to.
+* **--oscSendPort**         Required. receiving port of the machine OSC data is sent to.
+* **--oscCtrlPort**         (Default: 65111) local listening port to refetch descriptions.
+* **--oscMode**             (Default: max) OSC format (max, isadora, touch, sparck, ambi)
+* **--mulitCastIP**         (Default: 239.255.42.99) Multicast IP Motive is sending on.
+* **--motiveDataPort**      (Default: 1511) Motives data port
+* **--motiveCmdPort**       (Default: 1510) Motives command port
+* **--frameModulo**         (Default: 1) Frame reduction: Send every n-th frame
+* **--dataStreamInfo**      (Default: 0=off) sends each specified [ms] streaminfo message to the console.
+* **--sendSkeletons**       (Default: false) send skeleton data
+* **--sendMarkerInfo**      (Default: false) send marker info (position data)
+* **--sendOtherMarkerInfo** (Default: false) send other markers info (position data)
+* **--yup2zup**             (Default: false) transform y-up to z-up
+* **--leftHanded**          (Default: false) transform right handed to left handed coordinate system
+* **--matrix**              (Default: false) calculate and send the transformation matrix
+* **--invMatrix**           (Default: false) calculate and send the inverse transformation matrix
+* **--bundled**             (Default: false) send the frame message inside an osc bundle
+* **--autoReconnect**       (Default: false) reconnect to motive when no data is received
+* **--verbose**             (Default: false) verbose mode
+* **--help**                Display this help screen.
+* **--version**             Display version information.
 
 For all the boolean flags, if you want to set them true you need simply add its name: --flagName. If you want to keep it false, don't add it to the command line.
 
@@ -70,6 +71,7 @@ upon streaming, the following messages are sent depending on the OSC Mode
 #### MAX/MSP: OSC MODE = max
 
 + (!) /marker \<markerID> position \<x> \<y> \<z>
++ (!) /othermarker \<markerID> position \<x> \<y> \<z>
 + /rigidbody \<rigidbodyID> tracked \<0/1>
 + /rigidbody \<rigidbodyID> position \<x> \<y> \<z>
 + /rigidbody \<rigidbodyID> quat \<qx> \<qy> \<qz> \<qw>
@@ -82,6 +84,7 @@ upon streaming, the following messages are sent depending on the OSC Mode
 #### ISADORA: OSC MODE = isadora
 
 + (!) /marker/\<markerID>/position \<x> \<y> \<z>
++ (!) /othermarker/\<markerID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/quat \<qx> \<qy> \<qz> \<qw>
@@ -94,6 +97,7 @@ upon streaming, the following messages are sent depending on the OSC Mode
 #### TouchDesigner: OSC MODE = touch
 
 + (!) /marker/\<markerID>/position \<x> \<y> \<z>
++ (!) /othermarker/\<markerID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 + (!) /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
@@ -146,6 +150,7 @@ the following commands are implemented:
 + /script/oscModeTouch (0..1) will start/stop streaming touchdesigner type messages
 + /script/sendSkeletons (0..1) will start/stop streaming skeleton data
 + /script/sendMarkerInfo (0..1) will start/stop streaming marker data
++ /script/sendOtherMarkerInfo (0..1) will start/stop streaming other marker data
 + /script/verbose (0..1) will start/stop outputing verbose messages
 + /script/autoReconnect (0..1) will start/stop auto reconnecting
 + /script/zUpAxis (0..1) 1 = will transform to zUp orientation
