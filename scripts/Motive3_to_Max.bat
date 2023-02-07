@@ -1,0 +1,1 @@
+D:\00_core\NatNet2OSC\Motive3.x\NatNetThree2OSC --localIP=10.128.96.107 --motiveIP=10.128.96.113 --oscSendIP=10.128.96.107 --oscSendPort=1880 --oscCtrlPort=54322 --oscMode=sparck --yup2zup=true --sendSkeletons --sendOtherMarkerInfo
