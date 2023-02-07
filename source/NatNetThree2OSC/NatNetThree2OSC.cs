@@ -274,6 +274,7 @@ namespace NatNetThree2OSC
             Console.WriteLine("\t sendOtherMarkerInfo = \t[{0}]", opts.mySendOtherMarkerInfo);
             Console.WriteLine("\t matrix = \t\t[{0}]", opts.mMatrix);
             Console.WriteLine("\t invMatrix = \t\t[{0}]", opts.mInvMatrix);
+            Console.WriteLine("\t bundled = \t\t[{0}]", opts.mBundled);
             Console.WriteLine("\n");
             Console.WriteLine("\t localIP = \t\t({0:N3})", opts.mStrLocalIP);
             Console.WriteLine("\t motiveIP = \t\t({0:N3})", opts.mStrServerIP);
