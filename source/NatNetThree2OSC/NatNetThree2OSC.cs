@@ -261,8 +261,8 @@ namespace NatNetThree2OSC
             mMatrix = opts.mMatrix;
             mInvMatrix = opts.mInvMatrix;
 
-            Console.WriteLine("\n---- NatNetThree2OSC v. 8.9.0  ----");
-            Console.WriteLine("\n----    20221121 by maybites   ----");
+            Console.WriteLine("\n---- NatNetThree2OSC v. 9.0.0  ----");
+            Console.WriteLine("\n----    20230207 by maybites   ----");
 
             Console.WriteLine("\nNatNetThree2OSC");
             Console.WriteLine("\t oscSendIP = \t\t({0:N3})", opts.mStrOscSendIP);
@@ -652,6 +652,8 @@ namespace NatNetThree2OSC
             {
                 int markerID = -1;
 
+                List<float> positions = new List<float>(); ;
+
                 for (int j = 0; j < data.nOtherMarkers; j++)
                 {
                     NatNetML.Marker rbData = data.OtherMarkers[j];    // Received marker descriptions
@@ -696,13 +698,30 @@ namespace NatNetThree2OSC
                         message = new OscMessage("/othermarker/" + markerID + "/position", pxt, pyt, pzt);
                         bundle.Add(message);
                     }
+                    if (mOscModeSparck)
+                    {
+                        positions.Add(pxt);
+                        positions.Add(pyt);
+                        positions.Add(pzt);
+                    }
                 }
+                if (mOscModeSparck)
+                {
+                    // tracked     -> /rb <rigidbodyID> <datatype = 0> 1/0
+                    // marker      -> /rb <rigidbodyID> <datatype = 1> <px1> <py1> <pz1> <px2> <py2> <pz2> ...
+                    // othermarker -> /om  <px1> <py1> <pz1> <px2> <py2> <pz2> ...
+                    // rigidbody   -> /rb <rigidbodyID> <datatype = 2> <timestamp> <px> <py> <pz> <qx> <qy> <qz> <qw>
+                    message = new OscMessage("/om", positions.ToArray().Cast<object>().ToArray());
+                    bundle.Add(message);
+                }
+
             }
 
             /*  Parsing marker Frame Data   */
 
             if (mSendMarkerInfo == true)
             {
+
                 for (int j = 0; j < data.nMarkers; j++)
                 {
                     NatNetML.Marker rbData = data.LabeledMarkers[j];    // Received marker descriptions
@@ -852,6 +871,11 @@ namespace NatNetThree2OSC
                                 bundle.Add(message);
                                 if (mSendMarkerInfo == true)
                                 {
+
+                                    List<float> positions = new List<float>(); ;
+                                    positions.Add(rb.ID);
+                                    positions.Add(1);
+
                                     for (int m = 0; m < rb.nMarkers; m++)
                                     {
                                         float mpxt, mpyt, mpzt = 0.0f;
@@ -874,10 +898,18 @@ namespace NatNetThree2OSC
                                             mpxt = -mpxt;
                                         }
 
-                                        message = new OscMessage("/rb", rb.ID, 1, m, mpxt, mpyt, mpzt);
-                                        bundle.Add(message);
+                                        positions.Add(mpxt);
+                                        positions.Add(mpyt);
+                                        positions.Add(mpzt);
                                     }
+                                    // tracked     -> /rb <rigidbodyID> <datatype = 0> 1/0
+                                    // marker      -> /rb <rigidbodyID> <datatype = 1> <px1> <py1> <pz1> <px2> <py2> <pz2> ...
+                                    // othermarker -> /om  <px1> <py1> <pz1> <px2> <py2> <pz2> ...
+                                    // rigidbody   -> /rb <rigidbodyID> <datatype = 2> <timestamp> <px> <py> <pz> <qx> <qy> <qz> <qw>
+                                    message = new OscMessage("/rb",  positions.ToArray().Cast<object>().ToArray());
+                                    bundle.Add(message);
                                 }
+
                                 message = new OscMessage("/rb", rb.ID, 2, myTimestamp, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
                                 bundle.Add(message);
                             }
@@ -1004,8 +1036,8 @@ namespace NatNetThree2OSC
                                         bundle.Add(message);
                                         message = new OscMessage("/skeleton/bone", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
                                         bundle.Add(message);
-                                        message = new OscMessage("/skeleton/joint", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
-                                        bundle.Add(message);
+                                        //message = new OscMessage("/skeleton/joint", skl.Name, bone.ID, "quat", qxt, qyt, qzt, qwt);
+                                        //bundle.Add(message);
                                     }
                                     if (mOscModeIsa)
                                     {
@@ -1013,20 +1045,20 @@ namespace NatNetThree2OSC
                                         bundle.Add(message);
                                         message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
                                         bundle.Add(message);
-                                        message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
-                                        bundle.Add(message);
+                                        //message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
+                                        //bundle.Add(message);
                                     }
                                     if (mOscModeTouch)
                                     {
                                         message = new OscMessage("/skeleton/" + skl.Name + "/bone/" + bone.ID + "/transformation", pxt, pyt, pzt, qxt, qyt, qzt, qwt);
                                         bundle.Add(message);
-                                        message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
-                                        bundle.Add(message);
+                                        //message = new OscMessage("/skeleton/" + skl.Name + "/joint/" + bone.ID + "/quat", qxt, qyt, qzt, qwt);
+                                        //bundle.Add(message);
                                     }
                                     if (mOscModeSparck)
                                     {
-                                        // skeleton -> /skel <skeltonID> <datatype = 10> <boneID> <timestamp> <px> <py> <pz> <qx> <qy> <qz> <qw>
-                                        message = new OscMessage("/skel", skl.ID, 10, bone.ID, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
+                                        // skeleton -> /skel <skeltonID> <boneID> <timestamp> <px> <py> <pz> <qx> <qy> <qz> <qw>
+                                        message = new OscMessage("/skel", skl.ID, bone.ID, (float)data.fTimestamp * 1000f, pxt, pyt, pzt, qxt, qyt, qzt, qwt);
                                         bundle.Add(message);
                                     }
                                 }

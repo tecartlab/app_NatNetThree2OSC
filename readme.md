@@ -1,4 +1,4 @@
-NatNetThree2OSC 8.9.0
+NatNetThree2OSC 9.0.0
 ===================================
 
 
@@ -34,9 +34,9 @@ Usage: NatNetThree2OSC
 * **--motiveCmdPort**       (Default: 1510) Motives command port
 * **--frameModulo**         (Default: 1) Frame reduction: Send every n-th frame
 * **--dataStreamInfo**      (Default: 0=off) sends each specified [ms] streaminfo message to the console.
-* **--sendSkeletons**       (Default: false) send skeleton data
+* **--sendSkeletons**       (Default: false) send skeleton data (*)
 * **--sendMarkerInfo**      (Default: false) send marker info (position data)
-* **--sendOtherMarkerInfo** (Default: false) send other markers info (position data)
+* **--sendOtherMarkerInfo** (Default: false) send other markers info (position data) (*)
 * **--yup2zup**             (Default: false) transform y-up to z-up
 * **--leftHanded**          (Default: false) transform right handed to left handed coordinate system
 * **--matrix**              (Default: false) calculate and send the transformation matrix
@@ -48,6 +48,8 @@ Usage: NatNetThree2OSC
 * **--version**             Display version information.
 
 For all the boolean flags, if you want to set them true you need simply add its name: --flagName. If you want to keep it false, don't add it to the command line.
+
+(*) requires to be enabled in Motives streaming settings
 
 ### Streaming
 
@@ -66,67 +68,62 @@ if OSC MODE = sparck
 
 upon streaming, the following messages are sent depending on the OSC Mode
 
-**(!) - will only be sent if the CLI flags are set.**
+**(!1) - will only be sent if the CLI --sendMarkerInfo is set**
+**(!2) - will only be sent if the CLI --sendSkeletons  is set**
+**(!3) - will only be sent if the CLI --sendOtherMarkerInfo  is set**
+**(!4) - will only be sent if the CLI --matrix   is set**
+**(!5) - will only be sent if the CLI --invMatrix    is set**
 
 #### MAX/MSP: OSC MODE = max
 
-+ (!) /marker \<markerID> position \<x> \<y> \<z>
-+ (!) /othermarker \<markerID> position \<x> \<y> \<z>
++ (!1) /marker \<markerID> position \<x> \<y> \<z>
++ (!3) /othermarker \<markerID> position \<x> \<y> \<z>
 + /rigidbody \<rigidbodyID> tracked \<0/1>
 + /rigidbody \<rigidbodyID> position \<x> \<y> \<z>
 + /rigidbody \<rigidbodyID> quat \<qx> \<qy> \<qz> \<qw>
-+ (!) /rigidbody \<rigidbodyID> matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
-+ (!) /rigidbody \<rigidbodyID> invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
-+ (!) /skeleton/bone \<skleletonName> \<boneID> position \<x> \<y> \<z>
-+ (!) /skeleton/bone \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
-+ (!) /skeleton/joint \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
++ (!4) /rigidbody \<rigidbodyID> matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!5) /rigidbody \<rigidbodyID> invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!2) /skeleton/bone \<skleletonName> \<boneID> position \<x> \<y> \<z>
++ (!2) /skeleton/bone \<skleletonName> \<boneID> quat \<qx> \<qy> \<qz> \<qw>
 
 #### ISADORA: OSC MODE = isadora
 
-+ (!) /marker/\<markerID>/position \<x> \<y> \<z>
-+ (!) /othermarker/\<markerID>/position \<x> \<y> \<z>
++ (!1) /marker/\<markerID>/position \<x> \<y> \<z>
++ (!3) /othermarker/\<markerID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/quat \<qx> \<qy> \<qz> \<qw>
-+ (!) /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
-+ (!) /rigidbody/\<rigidbodyID>/invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
-+ (!) /skeleton/\<skleletonName>/bone/\<boneID>/position \<x> \<y> \<z>
-+ (!) /skeleton/\<skleletonName>/bone/\<boneID>/quat \<qx> \<qy> \<qz> \q<w>
-+ (!) /skeleton/\<skleletonName>/joint/\<boneID>/quat \<qx> \<qy> \<qz> \<qw>
++ (!4) /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!5) /rigidbody/\<rigidbodyID>/invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!2) /skeleton/\<skleletonName>/bone/\<boneID>/position \<x> \<y> \<z>
++ (!2) /skeleton/\<skleletonName>/bone/\<boneID>/quat \<qx> \<qy> \<qz> \q<w>
 
 #### TouchDesigner: OSC MODE = touch
 
-+ (!) /marker/\<markerID>/position \<x> \<y> \<z>
-+ (!) /othermarker/\<markerID>/position \<x> \<y> \<z>
++ (!1) /marker/\<markerID>/position \<x> \<y> \<z>
++ (!3) /othermarker/\<markerID>/position \<x> \<y> \<z>
 + /rigidbody/\<rigidbodyID>/tracked \<0/1>
 + /rigidbody/\<rigidbodyID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
-+ (!) /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
-+ (!) /rigidbody/\<rigidbodyID>/invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
-+ (!) /skeleton/\<skleletonName>/bone/\<boneID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
-+ (!) /skeleton/\<skleletonName>/joint/\<boneID>/quat \<x> \<y> \<z> \<w>
++ (!3) /rigidbody/\<rigidbodyID>/matrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!4) /rigidbody/\<rigidbodyID>/invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
++ (!2) /skeleton/\<skleletonName>/bone/\<boneID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 
-#### Ambisonics: OSC MODE = ambi
-
-+ /icst/ambi/source/xyz \<rigidbodyName> \<x> \<y> \<z>
-
-in this mode **no** frame messages are sent.
 
 #### SPARCK: OSC MODE = sparck
 
 the addresses for sparck mode are structured in a way to process them quickly in sparck and are therefore not very human readable.
 
-<datatype> specifies what kind of data follows
-0 = tracked
-1 = maker
-2 = rigidbody
-10 = skeleton
+\<datatype> specifies what kind of data follows: 0 = tracked / 1 = marker / 2 = rigidbody
 
-+ /rb \<rigidbodyID> <datatype = 0> \<0/1>
-+ (!) /rb \<rigidbodyID> <datatype = 1> \<markerID> \<x> \<y> \<z>
-+ /rb \<rigidbodyID> <datatype = 2> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
-+ (!) /skel \<skleletonID> <datatype = 10> \<boneID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
++      /rb \<rigidbodyID> <datatype = 0> \<0/1>
++ (!1) /rb \<rigidbodyID> <datatype = 1> \<x0> \<y0> \<z0> \<x1> \<y1> \<z1> ...
++      /rb \<rigidbodyID> <datatype = 2> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
++ (!2) /skel \<skleletonID> \<boneID> \<timestamp> \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
++ (!3) /om \<x0> \<y0> \<z0> \<x1> \<y1> \<z1> ...
 
-**(!) - will only be sent if the CLI flags are set.**
+**(!1) - will only be sent if the CLI --sendMarkerInfo is set**
+**(!2) - will only be sent if the CLI --sendSkeletons  is set**
+**(!3) - will only be sent if the CLI --sendOtherMarkerInfo  is set**
 
 IF you want to have multiple modes, set the oscmode like "max,isadora" or "isadora,touch" and make sure no space is between the values
 
