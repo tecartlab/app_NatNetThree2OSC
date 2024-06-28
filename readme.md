@@ -1,4 +1,4 @@
-NatNetThree2OSC 9.0.0
+NatNetThree2OSC 9.1.0
 ===================================
 
 
@@ -137,9 +137,21 @@ if OSC MODE = sparck
 
 ### Remote control
 
-sending commands to the \<OscListeningPort> will pass commands to Motive:
+sending following commands to the \<OscListeningPort> will pass commands to Motive:
 
-the following commands are implemented:
++ /motive/remote \<command>
+
+See the list of supported commands [here](https://docs.optitrack.com/developer-tools/natnet-sdk/natnet-remote-requests-commands).
+
+the script response: 
+
++ /motive/remote/response \<response>
+
+in case of an error: [error numbers](https://docs.optitrack.com/developer-tools/natnet-sdk/natnet-class-function-reference#errorcode)
+
+--
+
+sending following commands to the \<OscListeningPort> will change script parameters:
 
 + /script/oscModeSparck (0..1) will start/stop streaming max type messages
 + /script/oscModeMax (0..1) will start/stop streaming max type messages
@@ -158,6 +170,8 @@ the following commands are implemented:
 
 --
 
+sending following command to the \<OscListeningPort> will force motive to refetch meta information about the tracked objects:
+
 + /motive/command refetch
 
 will return all command options and all rigidbodies and skeletons currently streaming
@@ -169,6 +183,7 @@ will return all command options and all rigidbodies and skeletons currently stre
 + /motive/forceplate/id \<serial>
 + /motive/forceplate/id/channel \<serial> \<channelID> \<channelName>
 + /motive/update/end
+
 
 Building
 ---------

@@ -16,6 +16,7 @@
 
 using System;
 using System.Net;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
@@ -299,6 +300,16 @@ namespace NatNetThree2OSC
                     {
                         Console.WriteLine("Received Refetching Command.");
                         mAssetChanged = true;
+                    }
+                }
+                if (messageReceived != null && messageReceived.Address.Equals(value: "/motive/remote"))
+                {
+                    if (messageReceived.Arguments.Count > 0)
+                    {
+                        Console.WriteLine("Received remote command: " + (String)messageReceived.Arguments[0]);
+                        String result = remoteControlMotive((String)messageReceived.Arguments[0]);
+                        var message = new OscMessage("/motive/remote/response", result);
+                        OSCProxy.Send(message);
                     }
                 }
                 else if (messageReceived != null && messageReceived.Address.Equals(value: "/script/oscModeSparck"))
@@ -1162,6 +1173,32 @@ namespace NatNetThree2OSC
             Console.WriteLine("\tApplication Name: {0}", server.HostApp);
             Console.WriteLine("\tApplication Version: {0}.{1}.{2}.{3}", server.HostAppVersion[0], server.HostAppVersion[1], server.HostAppVersion[2], server.HostAppVersion[3]);
             Console.WriteLine("\tNatNet Version: {0}.{1}.{2}.{3}\n", server.NatNetVersion[0], server.NatNetVersion[1], server.NatNetVersion[2], server.NatNetVersion[3]);
+        }
+
+        static String remoteControlMotive(String command)
+        {
+
+            byte[] serverResponse = new byte[1024]; ;
+            int responseSize = 0;
+
+            int iResult = mNatNet.SendMessageAndWait(command, 10, 20, out serverResponse, out responseSize);
+
+            if(iResult != 0)
+            {
+                serverResponse = Encoding.ASCII.GetBytes("Error [" + iResult + "] occured");
+
+            }
+            else if (responseSize == 4 && (command.Equals("UnitsToMillimeters") || command.Equals("FrameRate")))
+            {
+                float floatValue = BitConverter.ToSingle(serverResponse, 0);
+                serverResponse = Encoding.ASCII.GetBytes(floatValue.ToString());
+            }
+            else if (responseSize == 4)
+            {
+                int intValue = BitConverter.ToInt32(serverResponse, 0);
+                serverResponse = Encoding.ASCII.GetBytes(intValue.ToString());
+            }
+            return Encoding.UTF8.GetString(serverResponse);
         }
 
         static void fetchDataDescriptor()
