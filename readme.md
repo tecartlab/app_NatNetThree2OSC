@@ -28,7 +28,7 @@ Usage: NatNetThree2OSC
 * **--oscSendIP**           Required. IP-address or URL of the machine OSC data is sent to.
 * **--oscSendPort**         Required. receiving port of the machine OSC data is sent to.
 * **--oscCtrlPort**         (Default: 65111) local listening port to refetch descriptions.
-* **--oscMode**             (Default: max) OSC format (max, isadora, touch, sparck, ambi)
+* **--oscMode**             (Default: max) OSC format (max, isadora, touch, sparck, transposed)
 * **--mulitCastIP**         (Default: 239.255.42.99) Multicast IP Motive is sending on.
 * **--motiveDataPort**      (Default: 1511) Motives data port
 * **--motiveCmdPort**       (Default: 1510) Motives command port
@@ -108,6 +108,12 @@ upon streaming, the following messages are sent depending on the OSC Mode
 + (!4) /rigidbody/\<rigidbodyID>/invmatrix \<m11> \<m12> \<m13> \<m14> \<m21> ... \<m44>
 + (!2) /skeleton/\<skleletonName>/bone/\<boneID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 
+#### Transposed data structure: OSC MODE = transposed
+
++ (!1) /marker/\<markerID>/position \<x> \<y> \<z>
++ (!3) /othermarker/\<markerID>/position \<x> \<y> \<z>
++ /rigidbody/\<rigidbodyID>/tracked \<0/1>
++ /rigidbody/\<rigidbodyID>/transformation \<x> \<y> \<z> \<qx> \<qy> \<qz> \<qw>
 
 #### SPARCK: OSC MODE = sparck
 

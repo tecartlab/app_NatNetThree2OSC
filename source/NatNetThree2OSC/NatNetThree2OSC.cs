@@ -82,7 +82,7 @@ namespace NatNetThree2OSC
         [Option("oscCtrlPort", Required = false, Default = 65111, HelpText = "listening port of this service to trigger Motive.")]
         public int mIntOscCtrlPort { get; set; }
 
-        [Option("oscMode", Separator = ':', Required = false, Default = "max", HelpText = "OSC format (max, isadora, touch)")]
+        [Option("oscMode", Separator = ':', Required = false, Default = "max", HelpText = "OSC format (max, isadora, touch, sparck, transposed)")]
         public IEnumerable<string> mOscMode { get; set; }
 
         [Option("frameModulo", Required = false, Default = 1, HelpText = "Send every n-th frame")]
@@ -142,7 +142,7 @@ namespace NatNetThree2OSC
         private static bool mOscModeIsa = false;
         private static bool mOscModeTouch = false;
         private static bool mOscModeSparck = false;
-        private static bool mOscModeAmbi = false;
+        private static bool mOscModeTranspose = false;
         private static int mUpAxis = 0;
         private static bool mleftHanded = false;
         private static bool mSendSkeletons = false;
@@ -246,7 +246,7 @@ namespace NatNetThree2OSC
             mOscModeIsa = (opts.mOscMode.Contains("isadora")) ? true : false;
             mOscModeTouch = (opts.mOscMode.Contains("touch")) ? true : false;
             mOscModeSparck = (opts.mOscMode.Contains("sparck")) ? true : false;
-            mOscModeAmbi = (opts.mOscMode.Contains("ambi")) ? true : false;
+            mOscModeTranspose = (opts.mOscMode.Contains("transposed")) ? true : false;
 
             mUpAxis = (opts.myUp2zUp) ? 1 : 0;
             mleftHanded = opts.myleftHanded;
@@ -834,11 +834,6 @@ namespace NatNetThree2OSC
 
                         if (rbData.Tracked == true)
                         {
-                            if (mOscModeAmbi)
-                            {
-                                message = new OscMessage("/icst/ambi/source/xyz", rb.Name, pxt, pyt, pzt);
-                                bundle.Add(message);
-                            }
                             if (mOscModeMax)
                             {
                                 message = new OscMessage("/rigidbody", rb.ID, "tracked", 1);
@@ -978,6 +973,25 @@ namespace NatNetThree2OSC
                         }
                     }
                 }
+            }
+
+            if (mOscModeTranspose)
+            {
+                if (mSendMarkerInfo == true)
+                {
+                    // /marker
+                }
+                if (mSendOtherMarkerInfo == true)
+                {
+                    // /othermarker
+                }
+
+                // rididbody
+
+
+                // skeleton
+                message = new OscMessage("/icst/ambi/source/xyz", rb.Name, pxt, pyt, pzt);
+                bundle.Add(message);
             }
 
             if (mSendSkeletons)
